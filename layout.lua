@@ -31,12 +31,12 @@ local RAID_CLASS_COLORS = RAID_CLASS_COLORS
 -- ------------------------------------------------------------------------
 -- font, fontsize and textures
 -- ------------------------------------------------------------------------
-local font = "Interface\\AddOns\\oUF_Lyn\\fonts\\font.ttf"
-local upperfont = "Interface\\AddOns\\oUF_Lyn\\fonts\\upperfont.ttf"
+local font = "Interface\\AddOns\\oUF_Dys\\fonts\\font.ttf"
+local upperfont = "Interface\\AddOns\\oUF_Dys\\fonts\\upperfont.ttf"
 local fontsize = 15
 local smallfontsize = 12
-local bartex = "Interface\\AddOns\\oUF_Lyn\\textures\\statusbar"
-local bufftex = "Interface\\AddOns\\oUF_Lyn\\textures\\border"
+local bartex = "Interface\\AddOns\\oUF_Dys\\textures\\statusbar"
+local bufftex = "Interface\\AddOns\\oUF_Dys\\textures\\border"
 local playerClass = select(2, UnitClass("player"))
 
 -- castbar position
@@ -616,6 +616,23 @@ local func = function(self, unit)
 			self.Castbar.SafeZone:SetPoint("BOTTOMRIGHT")
 
 			self.Castbar:SetPoint('CENTER', UIParent, 'CENTER', playerCastBar_x, playerCastBar_y)
+
+			--
+			-- GCD spark
+			--
+			self.GCD = CreateFrame("Frame", nil, self)
+			self.GCD:SetPoint('TOPLEFT', self.Castbar, 'BOTTOMLEFT')
+			self.GCD:SetPoint('TOPRIGHT', self.Castbar, 'BOTTOMRIGHT')
+			self.GCD:SetHeight(4)
+
+			self.GCD.Spark = self.GCD:CreateTexture(nil, "OVERLAY")
+			self.GCD.Spark:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
+			self.GCD.Spark:SetBlendMode("ADD")
+			self.GCD.Spark:SetHeight(10)
+			self.GCD.Spark:SetWidth(10)
+			self.GCD.Spark:SetPoint('BOTTOMLEFT', self.Title, 'BOTTOMLEFT', -5, -5)
+
+			self.GCD.ReferenceSpellName = "Ice Lance"
 		else
 			self.Castbar:SetStatusBarColor(0.80, 0.01, 0)
 			self.Castbar:SetHeight(24)
@@ -652,7 +669,6 @@ local func = function(self, unit)
 		self.Castbar.Time:SetFont(upperfont, 12, "OUTLINE")
 		self.Castbar.Time:SetTextColor(1, 1, 1)
 		self.Castbar.Time:SetJustifyH('RIGHT')
-
 	end
 
 
@@ -718,7 +734,7 @@ local func = function(self, unit)
 		self.DebuffHighlight:SetVertexColor(0, 0, 0, 0)
 		self.DebuffHighlightAlpha = 0.8
 		self.DebuffHighlightFilter = true
-		end
+	end
 
 	--
 	-- fading for party and raid
