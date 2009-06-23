@@ -39,33 +39,20 @@ local bartex = "Interface\\AddOns\\oUF_Lyn\\textures\\statusbar"
 local bufftex = "Interface\\AddOns\\oUF_Lyn\\textures\\border"
 local playerClass = select(2, UnitClass("player"))
 
+-- castbar position
+local playerCastBar_x = 0
+local playerCastBar_y = -300
+local targetCastBar_x = 11
+local targetCastBar_y = -200
+
 -- ------------------------------------------------------------------------
 -- change some colors :)
 -- ------------------------------------------------------------------------
-oUF.colors.power[3] = {1, 0.85, 0.1}	-- energy
-
 oUF.colors.happiness = {
 	[1] = {182/225, 34/255, 32/255},	-- unhappy
 	[2] = {220/225, 180/225, 52/225},	-- content
 	[3] = {143/255, 194/255, 32/255},	-- happy
 }
-
-oUF.colors.reaction = {
-	[1] = { 182/255, 34/255, 32/255},	-- exceptionally hostile
-	[2] = { 182/255, 34/255, 32/255},	-- very hostile
-	[3] = { 182/255, 92/255, 32/255},	-- hostile
-	[4] = { 220/225, 180/255, 52/255},	-- neutral
-	[5] = { 143/255, 194/255, 32/255},	-- friendly
-	[6] = { 143/255, 194/255, 32/255},	-- very friendly
-	[7] = { 143/255, 194/255, 32/255},	-- exceptionally friendly
-	[8] = { 143/255, 194/255, 32/255},	-- exalted
-}
-
--- ------------------------------------------------------------------------
--- plugins
--- ------------------------------------------------------------------------
-local LibMobHealth
-if LibStub then LibMobHealth = LibStub("LibMobHealth-4.0", true) end
 
 -- ------------------------------------------------------------------------
 -- right click
@@ -162,44 +149,29 @@ end
 -- ------------------------------------------------------------------------
 -- health update
 -- ------------------------------------------------------------------------
-local updateHealth = function(self, event, unit, bar, min, max)
-	local cur, maxhp
-	if LibMobHealth then
-		cur, maxhp = LibMobHealth:GetUnitHealth(unit) -- LibMobHealth-4.0 support
-	else
-		cur, maxhp = min, max
-	end
-
-	local d = floor(cur/maxhp*100)
-
+local updateHealth = function(self, event, unit, bar, min, max)  
+	local cur, maxhp = min, max
+    
+local d = floor(cur/maxhp*100)
+    
 	if(UnitIsDead(unit) or UnitIsGhost(unit)) then
 		bar:SetValue(0)
 		bar.value:SetText"dead"
 	elseif(not UnitIsConnected(unit)) then
 		bar.value:SetText"offline"
 	elseif(unit == "player") then
---VH		if(min ~= max) then
---			bar.value:SetText("|cff33EE44"..numberize(maxhp-(maxhp-cur)) .."|r.".. d.."%")
+		if(min ~= max) then
 			bar.value:SetText("|cff33EE44"..numberize(cur) .."|r.".. d.."%")
---VH		bar.value:SetText("|cff33EE44"..numberize(maxhp-cur) .."|r.".. d.."%")
---VH	else
---			bar.value:SetText(" ")
---VH	end
+		else
+			bar.value:SetText(" ")
+		end
 	elseif(unit == "targettarget") then
 		bar.value:SetText(d.."%")
 	elseif(unit == "target") then
-		if LibMobHealth then -- LibMobHealth-4.0 only for targets
-			if(d < 100) then
-				bar.value:SetText("|cff33EE44"..numberize(cur).."|r."..d.."%")
-			else
-				bar.value:SetText(" ")
-			end
+		if(d < 100) then
+			bar.value:SetText("|cff33EE44"..numberize(cur).."|r."..d.."%")
 		else
-			if(d < 100) then
-				bar.value:SetText(d.."%")
-			else
-				bar.value:SetText(" ")
-			end
+			bar.value:SetText(" ")
 		end
 
 	elseif(min == max) then
@@ -229,8 +201,9 @@ local updatePower = function(self, event, unit, bar, min, max)
 	if UnitIsPlayer(unit)==nil then
 		bar.value:SetText()
 	else
-		local color = oUF.colors.power[UnitPowerType(unit)]
-		if(min==0) then
+		local _, ptype = UnitPowerType(unit)
+		local color = oUF.colors.power[ptype]
+		if(min==0) then 
 			bar.value:SetText()
 		elseif(UnitIsDead(unit) or UnitIsGhost(unit)) then
 			bar:SetValue(0)
@@ -312,7 +285,7 @@ local func = function(self, unit)
 	--
 	self:SetBackdrop{
 	bgFile = "Interface\\ChatFrame\\ChatFrameBackground", tile = true, tileSize = 16,
-	insets = {left = -2, right = -2.5, top = -2.5, bottom = -2},
+	insets = {left = -2, right = -2, top = -2, bottom = -2},
 	}
 	self:SetBackdropColor(0,0,0,1) -- and color the backgrounds
 
@@ -416,19 +389,6 @@ local func = function(self, unit)
 	self.Level:SetShadowOffset(1, -1)
 	self.UNIT_LEVEL = updateLevel
 
-	--
-	-- debuffs
-	--
-	self.Debuffs = CreateFrame("Frame", nil, self)
-	self.Debuffs.size = 20 * 1.3
-	self.Debuffs:SetHeight(self.Debuffs.size)
-	self.Debuffs:SetWidth(self.Debuffs.size * 5)
-	self.Debuffs:SetPoint("LEFT", self, "RIGHT", 5, 0)
-	self.Debuffs.initialAnchor = "TOPLEFT"
-	self.Debuffs.filter = true
-	self.Debuffs.spacing = 2
-	self.Debuffs.num = 2 -- max debuffs
-
 	-- ------------------------------------
 	-- player
 	-- ------------------------------------
@@ -442,9 +402,8 @@ local func = function(self, unit)
 		self.Power.value:Show()
 		self.Power.value:SetPoint("LEFT", self.Health, 0, 9)
 		self.Power.value:SetJustifyH"LEFT"
-		self.Debuffs:Hide()
 		self.Level:Hide()
-
+		
 		if(playerClass=="DRUID") then
 			-- bar
 			self.DruidMana = CreateFrame('StatusBar', nil, self)
@@ -590,7 +549,7 @@ local func = function(self, unit)
 		--
 		-- debuffs
 		--
-		self.Debuffs:ClearAllPoints()
+		self.Debuffs = CreateFrame("Frame", nil, self)
 		self.Debuffs.size = 30
 		self.Debuffs:SetHeight(self.Debuffs.size)
 		self.Debuffs:SetWidth(self.Debuffs.size * 9)
@@ -613,7 +572,6 @@ local func = function(self, unit)
 		self.Power:Hide()
 		self.Power.value:Hide()
 		self.Health.value:Hide()
-		self.Debuffs:Hide()
 		self.Name:SetWidth(95)
 		self.Name:SetHeight(18)
 
@@ -635,11 +593,9 @@ local func = function(self, unit)
 		end
 	end
 
-
 	-- ------------------------------------
 	-- player and target castbar
-	-- ------------------------------------
-	if nil then -- VH: Don't want no castbars
+	-- ------------------------------------	
 	if(unit == 'player' or unit == 'target') then
 	    self.Castbar = CreateFrame('StatusBar', nil, self)
 	    self.Castbar:SetStatusBarTexture(bartex)
@@ -650,7 +606,7 @@ local func = function(self, unit)
 			self.Castbar:SetWidth(260)
 
 			self.Castbar:SetBackdrop({
-				bgFile = [[Interface\ChatFrame\ChatFrameBackground]],
+				bgFile = "Interface\ChatFrame\ChatFrameBackground",
 				insets = {top = -3, left = -3, bottom = -3, right = -3}})
 
 			self.Castbar.SafeZone = self.Castbar:CreateTexture(nil,"ARTWORK")
@@ -658,24 +614,24 @@ local func = function(self, unit)
 			self.Castbar.SafeZone:SetVertexColor(.75,.10,.10,.6)
 			self.Castbar.SafeZone:SetPoint("TOPRIGHT")
 			self.Castbar.SafeZone:SetPoint("BOTTOMRIGHT")
-
-			self.Castbar:SetPoint('CENTER', UIParent, 'CENTER', 0, -350)
+			
+			self.Castbar:SetPoint('CENTER', UIParent, 'CENTER', playerCastBar_x, playerCastBar_y)
 		else
 			self.Castbar:SetStatusBarColor(0.80, 0.01, 0)
 			self.Castbar:SetHeight(24)
 			self.Castbar:SetWidth(286)
 
 			self.Castbar:SetBackdrop({
-				bgFile = [[Interface\ChatFrame\ChatFrameBackground]],
-				insets = {top = -3, left = -29, bottom = -3, right = -3}})
-
+				bgFile = "Interface\ChatFrame\ChatFrameBackground",
+				insets = {top = -3, left = -30, bottom = -3, right = -3}})
+			
 			self.Castbar.Icon = self.Castbar:CreateTexture(nil, 'OVERLAY')
 			self.Castbar.Icon:SetPoint("RIGHT", self.Castbar, "LEFT", -3, 0)
-			self.Castbar.Icon:SetHeight(22)
-			self.Castbar.Icon:SetWidth(22)
+			self.Castbar.Icon:SetHeight(24)
+			self.Castbar.Icon:SetWidth(24)
 			self.Castbar.Icon:SetTexCoord(0.1,0.9,0.1,0.9)
 
-			self.Castbar:SetPoint('CENTER', UIParent, 'CENTER', 11, -220)
+			self.Castbar:SetPoint('CENTER', UIParent, 'CENTER', targetCastBar_x, targetCastBar_y)
 		end
 
 		self.Castbar:SetBackdropColor(0, 0, 0, 0.5)
@@ -698,7 +654,6 @@ local func = function(self, unit)
 	    self.Castbar.Time:SetJustifyH('RIGHT')
 
 	end
-	end -- VEDAT: Don't want no castbars
 
 
 	-- ------------------------------------
@@ -713,6 +668,20 @@ local func = function(self, unit)
 		self.Health.value:SetPoint("RIGHT", 0 , 9)
 		self.Name:SetPoint("LEFT", 0, 9)
 
+		--
+		-- debuffs
+		--
+		self.Debuffs = CreateFrame("Frame", nil, self)
+		self.Debuffs.size = 20 * 1.3
+		self.Debuffs:SetHeight(self.Debuffs.size)
+		self.Debuffs:SetWidth(self.Debuffs.size * 5)
+		self.Debuffs:SetPoint("LEFT", self, "RIGHT", 5, 0)
+		self.Debuffs.initialAnchor = "TOPLEFT"
+		self.Debuffs.filter = false
+		self.Debuffs.showDebuffType = true
+		self.Debuffs.spacing = 2
+		self.Debuffs.num = 2 -- max debuffs
+		
 		--
 		-- raid target icons
 		--
@@ -735,7 +704,6 @@ local func = function(self, unit)
 		self.Power:SetFrameLevel(2)
 		self.Health.value:Hide()
 		self.Power.value:Hide()
-		self.Debuffs:Hide()
 		self.Name:SetFont(font, 12, "OUTLINE")
 		self.Name:SetWidth(85)
 		self.Name:SetHeight(15)
