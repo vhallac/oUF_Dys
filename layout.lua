@@ -759,10 +759,12 @@ local tot = oUF:Spawn("targettarget", "oUF_TargetTarget")
 tot:SetPoint("TOPRIGHT", target, 0, 35)
 local focus	= oUF:Spawn("focus", "oUF_Focus")
 focus:SetPoint("BOTTOMRIGHT", player, 0, -30)
+--[[ Dys: No need for this yet
 local mouseover = oUF:Spawn("mouseover", "oUF_MO")
 mouseover:SetPoint("BOTTOMLEFT", pet, 0, -30)
 local mouseovertarget = oUF:Spawn("mouseovertarget", "oUF_MOT")
 mouseovertarget:SetPoint("BOTTOMLEFT", focus, 0, -30)
+]]--
 
 --
 -- party
