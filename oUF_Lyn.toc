@@ -1,0 +1,8 @@
+## Interface: 20400
+## Author: Lyn
+## Title: oUF_Lyn
+## Version: 0.9
+## OptionalDeps: LibMobHealth-4.0,  oUF_DruidMana, oUF_PowerSpark, oUF_DebuffHighlight, oUF_Banzai
+## RequiredDeps: oUF
+
+layout.lua
