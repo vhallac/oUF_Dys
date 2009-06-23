@@ -209,26 +209,6 @@ local updatePower = function(self, event, unit, bar, min, max)
 			bar:SetValue(0)
 		elseif(not UnitIsConnected(unit)) then
 			bar.value:SetText()
---[[ VH
-		elseif unit=="player" then
-			if((max-min) > 0) then
-				bar.value:SetText(min)
-				if color then
-					bar.value:SetTextColor(color[1], color[2], color[3])
-				else
-					bar.value:SetTextColor(0.2, 0.66, 0.93)
-				end
-			elseif(min==max) then
-				bar.value:SetText("")
-			else
-				bar.value:SetText(min)
-				if color then
-					bar.value:SetTextColor(color[1], color[2], color[3])
-				else
-					bar.value:SetTextColor(0.2, 0.66, 0.93)
-				end
-			end
-]]--
 	else
 			if((max-min) > 0) then
 				bar.value:SetText(min)
@@ -478,10 +458,8 @@ local func = function(self, unit)
 		self:SetWidth(120)
 		self:SetHeight(18)
 		self.Health:SetHeight(18)
-		--VH:self.Power:Hide()
 		self.Health.value:Hide()
 		self.Level:Hide()
-		--VH:self.Name:Hide()
 
 		if playerClass=="HUNTER" then
 			self.Health.colorReaction = false
@@ -564,7 +542,6 @@ local func = function(self, unit)
 	-- ------------------------------------
 	-- target of target and focus
 	-- ------------------------------------
-	--VH if unit=="targettarget" or unit=="focus" then
 	if unit=="targettarget" or unit=="focus" or unit=="mouseover" or unit=="mouseovertarget" then
 		self:SetWidth(120)
 		self:SetHeight(18)
