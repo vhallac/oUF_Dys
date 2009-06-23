@@ -1,0 +1,12 @@
+## Interface: 20400
+## Author: p3lim
+## Version: Revision 6
+## Title: oUF DruidMana
+## Notes: Druid mana support for oUF layouts.
+## OptionalDeps: LibDruidMana-1.0
+## RequiredDeps: oUF
+
+LibDruidMana-1.0\LibStub\LibStub.lua
+LibDruidMana-1.0\LibDruidMana-1.0.lua
+
+oUF_DruidMana.lua

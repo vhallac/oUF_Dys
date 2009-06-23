@@ -1,0 +1,16 @@
+## Interface: 20400
+## Title: oUF IncomingHeals
+## Notes: Show incoming heals for oUF using LibHealComm-3.0.
+## Author: Snago
+## Version: 1.0
+## X-Category: UnitFrame
+## X-Embeds: LibHealComm-3.0
+## Dependencies: oUF
+## OptionalDeps: LibHealComm-3.0
+## LoadWith: oUF
+
+LibHealComm-3.0\LibStub\LibStub.lua
+LibHealComm-3.0\CallbackHandler-1.0\CallbackHandler-1.0.lua
+LibHealComm-3.0\lib.xml
+
+oUF_IncomingHeals.lua

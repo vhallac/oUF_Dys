@@ -1,10 +1,23 @@
 ## Interface: 30000
 ## Author: Lyn
-## Title: oUF_Lyn
+## Title: oUF_Dys
+## X-oUF: oUF
 ## Version: 1.2.4f
-## OptionalDeps: oUF_PowerSpark, oUF_DebuffHighlight, oUF_Banzai, oUF_BarFader
-## RequiredDeps: oUF
+## Dependencies: oUF
 
+#@no-lib-strip@
 embeds.xml
+#@end-no-lib-strip@
+
+#oUF\ouf.xml
+
+oUF_PowerSpark\oUF_PowerSpark.lua
+oUF_GCD\oUF_GCD.lua
+
+oUF_IncomingHeals\LibHealComm-3.0\LibStub\LibStub.lua
+oUF_IncomingHeals\LibHealComm-3.0\CallbackHandler-1.0\CallbackHandler-1.0.lua
+oUF_IncomingHeals\LibHealComm-3.0\lib.xml
+
+oUF_IncomingHeals\oUF_IncomingHeals.lua
 
 layout.lua

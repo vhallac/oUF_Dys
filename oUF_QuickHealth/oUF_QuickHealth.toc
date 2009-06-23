@@ -1,0 +1,13 @@
+## Interface: 20400
+## Title: oUF_QuickHealth
+## Notes: Makes oUF QuickHealth aware
+## Notes-deDE: Schnellere Aktualisierung der Gesundheitsanzeigen mit QuickHealth
+## Author: Cncfanatics
+## X-Embeds: LibQuickHealth-1.0
+## Dependencies: oUF
+## OptionalDeps: LibQuickHealth-1.0, LibStub, CallbackHandler-1.0
+## X-Donate: PayPal: diego.duclos@gmail.com
+## X-Email: diego.duclos@gmail.com
+
+libs\LibQuickHealth-1.0\LibQuickHealth-1.0.xml
+oUF_QuickHealth.lua

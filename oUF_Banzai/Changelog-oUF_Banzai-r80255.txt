@@ -1,0 +1,13 @@
+------------------------------------------------------------------------
+r80255 | rabbit | 2008-08-12 03:09:00 -0400 (Tue, 12 Aug 2008) | 1 line
+Changed paths:
+   M /trunk/oUF_Banzai/oUF_Banzai.lua
+
+oUF_Banzai: Update for oUF API change.
+------------------------------------------------------------------------
+r79322 | rabbit | 2008-07-28 03:14:15 -0400 (Mon, 28 Jul 2008) | 1 line
+Changed paths:
+   M /trunk/oUF_Banzai/oUF_Banzai.lua
+
+oUF_Banzai: Update for oUF change.
+------------------------------------------------------------------------

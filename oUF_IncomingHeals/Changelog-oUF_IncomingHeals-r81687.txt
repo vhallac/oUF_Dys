@@ -1,0 +1,8 @@
+------------------------------------------------------------------------
+r81687 | pprovost | 2008-09-13 13:58:21 -0400 (Sat, 13 Sep 2008) | 2 lines
+Changed paths:
+   M /trunk/oUF_IncomingHeals/oUF_IncomingHeals.lua
+
+oUF_IncomingHeals: Updated to work with new UpdateHealth function signature
+
+------------------------------------------------------------------------
