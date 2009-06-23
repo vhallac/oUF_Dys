@@ -177,12 +177,13 @@ local updateHealth = function(self, event, unit, bar, min, max)
 	elseif(not UnitIsConnected(unit)) then
 		bar.value:SetText"offline"
     elseif(unit == "player") then
-		if(min ~= max) then
+--VH		if(min ~= max) then
 --			bar.value:SetText("|cff33EE44"..numberize(maxhp-(maxhp-cur)) .."|r.".. d.."%")
-			bar.value:SetText("|cff33EE44"..numberize(maxhp-cur) .."|r.".. d.."%")
-		else
-			bar.value:SetText(" ")
-		end
+            bar.value:SetText("|cff33EE44"..numberize(cur) .."|r.".. d.."%")
+--VH			bar.value:SetText("|cff33EE44"..numberize(maxhp-cur) .."|r.".. d.."%")
+--VH		else
+--			bar.value:SetText(" ")
+--VH		end
 	elseif(unit == "targettarget") then
 		bar.value:SetText(d.."%")
     elseif(unit == "target") then
@@ -234,6 +235,7 @@ local updatePower = function(self, event, unit, bar, min, max)
 			bar:SetValue(0)
 		elseif(not UnitIsConnected(unit)) then
 			bar.value:SetText()
+--[[ VH
 		elseif unit=="player" then 
 			if((max-min) > 0) then
 	            bar.value:SetText(max-(max-min))
@@ -252,6 +254,7 @@ local updatePower = function(self, event, unit, bar, min, max)
 					bar.value:SetTextColor(0.2, 0.66, 0.93)
 				end
 			end
+]]--
         else
 			if((max-min) > 0) then
 				bar.value:SetText(max-(max-min))
@@ -426,18 +429,33 @@ local func = function(self, unit)
 	-- ------------------------------------
     if unit=="player" then
         self:SetWidth(250)
-      	self:SetHeight(20)
+      	self:SetHeight(27)
 		self.Health:SetHeight(15.5)
 		self.Name:Hide()
 		self.Health.value:SetPoint("RIGHT", 0, 9)
-	    self.Power:SetHeight(3)
+	    self.Power:SetHeight(10)
         self.Power.value:Show()
 		self.Power.value:SetPoint("LEFT", self.Health, 0, 9)
 		self.Power.value:SetJustifyH"LEFT"
         self.Debuffs:Hide()
 		self.Level:Hide()
 		
-		--if(playerClass=="DRUID") then
+		if(playerClass=="DRUID") then
+            self.DruidMana = CreateFrame('StatusBar', nil, self)
+            self.DruidMana:SetPoint('TOP', self, 'BOTTOM', 0, -3)
+            self.DruidMana:SetStatusBarTexture(bartex)
+            self.DruidMana:SetStatusBarColor(0.3, 0.3, 1)
+            self.DruidMana:SetHeight(3)
+            self.DruidMana:SetPoint"LEFT"
+            self.DruidMana:SetPoint"RIGHT"
+
+            local druidtext = self.DruidMana:CreateFontString(nil, "OVERLAY")
+			druidtext:SetFont(font, fontsize/1.5, "OUTLINE")
+			druidtext:SetTextColor(.3,.3,1)
+			druidtext:SetPoint("TOP", self.DruidMana, "BOTTOM", 0, 5)
+			--self.DruidManaText = druidtext
+            self.DruidMana.text = druidtext
+
 			--[[
 			self.DruidManaText = hp:CreateFontString(nil, 'OVERLAY')
 			self.DruidManaText:SetPoint("CENTER", hp, "CENTER", 0, 9)
@@ -445,7 +463,7 @@ local func = function(self, unit)
 			self.DruidManaText:SetTextColor(1,1,1)
 			self.DruidManaText:SetJustifyH('LEFT')
 			--]]
---		end
+		end
 		
 		--
 		-- leader icon
@@ -504,9 +522,9 @@ local func = function(self, unit)
 	-- ------------------------------------
     if unit=="target" then
 		self:SetWidth(250)
-		self:SetHeight(20)
+		self:SetHeight(27)
 		self.Health:SetHeight(15.5)
-		self.Power:SetHeight(3)
+		self.Power:SetHeight(10)
 		self.Power.value:Hide()
 		self.Health.value:SetPoint("RIGHT", 0, 9)
 		self.Name:SetPoint("LEFT", self.Level, "RIGHT", 0, 0)
@@ -588,16 +606,18 @@ local func = function(self, unit)
 		self.RaidIcon:SetTexture"Interface\\TargetingFrame\\UI-RaidTargetingIcons"
 	end
 	
+
 	-- ------------------------------------
 	-- player and target castbar
 	-- ------------------------------------
+    if nil then -- VEDAT: Don't want no castbars
 	if(unit == 'player' or unit == 'target') then
 	    self.Castbar = CreateFrame('StatusBar', nil, self)
 	    self.Castbar:SetStatusBarTexture(bartex)
 	    		
 		if(unit == "player") then
 			self.Castbar:SetStatusBarColor(1, 0.50, 0)
-			self.Castbar:SetHeight(24)
+			self.Castbar:SetHeight(27)
 			self.Castbar:SetWidth(260)
 			
 			self.Castbar:SetBackdrop({
@@ -610,7 +630,7 @@ local func = function(self, unit)
 			self.Castbar.safezone:SetPoint("TOPRIGHT")
 			self.Castbar.safezone:SetPoint("BOTTOMRIGHT")
 			
-			self.Castbar:SetPoint('CENTER', UIParent, 'CENTER', 0, -350)
+			self.Castbar:SetPoint('CENTER', UIParent, 'CENTER', 0, -260)
 		else
 			self.Castbar:SetStatusBarColor(0.80, 0.01, 0)
 			self.Castbar:SetHeight(24)
@@ -647,9 +667,10 @@ local func = function(self, unit)
 	    self.Castbar.Time:SetFont(upperfont, 12, "OUTLINE")
 	    self.Castbar.Time:SetTextColor(1, 1, 1)
 	    self.Castbar.Time:SetJustifyH('RIGHT')
+        
 	end
+    end -- VEDAT: Don't want no castbars
 
-	
 	
 	-- ------------------------------------
 	-- party 
@@ -739,9 +760,9 @@ oUF:RegisterStyle("Lyn", func)
 
 oUF:SetActiveStyle("Lyn")
 local player = oUF:Spawn("player", "oUF_Player")
-player:SetPoint("CENTER", -335, -106)
+player:SetPoint("CENTER", -300, -260)
 local target = oUF:Spawn("target", "oUF_Target")
-target:SetPoint("CENTER", 335, -106) 
+target:SetPoint("CENTER", 300, -260) 
 local pet = oUF:Spawn("pet", "oUF_Pet")
 pet:SetPoint("BOTTOMLEFT", player, 0, -30)
 local tot = oUF:Spawn("targettarget", "oUF_TargetTarget")
@@ -754,10 +775,11 @@ focus:SetPoint("BOTTOMRIGHT", player, 0, -30)
 --
 local party	= oUF:Spawn("header", "oUF_Party")
 party:SetManyAttributes("showParty", true, "yOffset", -15)
-party:SetPoint("TOPLEFT", 35, -200)
+party:SetPoint("TOPLEFT", 35, -320)
 party:Show()
 party:SetAttribute("showRaid", false)
 
+--[[
 --
 -- raid
 --
@@ -777,7 +799,7 @@ for i = 1, NUM_RAID_GROUPS do
 	end
 	RaidGroup:Show()
 end
-
+]]--
 --
 -- party toggle in raid
 --
