@@ -1,7 +1,7 @@
 ## Interface: 30000
 ## Author: Lyn
 ## Title: oUF_Dys
-## X-oUF: oUF
+## X-oUF: oUF_Dys
 ## Version: 1.2.4f
 
 #@no-lib-strip@

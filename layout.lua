@@ -1,7 +1,11 @@
 ﻿--[[
 
-	oUF_Lyn
+	oUF_Dys - Based on oUF_Lyn
 
+	Author:     Dys
+	Mail:       dys.wowace@gmail.com
+
+	Credits for original work:
 	Author:		Lyn
 	Mail:		post@endlessly.de
 	URL:		http://www.wowinterface.com/list.php?skinnerid=62149
@@ -14,6 +18,7 @@
 
 -- ------------------------------------------------------------------------
 -- local horror
+-- This speeds up the name lookups, but messes with function/variable patching.
 -- ------------------------------------------------------------------------
 local select = select
 local UnitClass = UnitClass
@@ -27,6 +32,8 @@ local UnitCreatureType = UnitCreatureType
 local UnitClassification = UnitClassification
 local UnitReactionColor = UnitReactionColor
 local RAID_CLASS_COLORS = RAID_CLASS_COLORS
+-- Pick up the global, which is controlled by X-oUF of the TOC file.
+local oUF = oUF_Dys
 
 -- ------------------------------------------------------------------------
 -- font, fontsize and textures
@@ -41,9 +48,9 @@ local playerClass = select(2, UnitClass("player"))
 
 -- castbar position
 local playerCastBar_x = 0
-local playerCastBar_y = -300
+local playerCastBar_y = -350
 local targetCastBar_x = 11
-local targetCastBar_y = -200
+local targetCastBar_y = -250
 
 -- ------------------------------------------------------------------------
 -- change some colors :)
@@ -160,20 +167,11 @@ local d = floor(cur/maxhp*100)
 	elseif(not UnitIsConnected(unit)) then
 		bar.value:SetText"offline"
 	elseif(unit == "player") then
-		if(min ~= max) then
-			bar.value:SetText("|cff33EE44"..numberize(cur) .."|r.".. d.."%")
-		else
-			bar.value:SetText(" ")
-		end
+		bar.value:SetText("|cff33EE44"..numberize(cur) .."|r.".. d.."%")
 	elseif(unit == "targettarget") then
 		bar.value:SetText(d.."%")
 	elseif(unit == "target") then
-		if(d < 100) then
-			bar.value:SetText("|cff33EE44"..numberize(cur).."|r."..d.."%")
-		else
-			bar.value:SetText(" ")
-		end
-
+		bar.value:SetText("|cff33EE44"..numberize(cur).."|r."..d.."%")
 	elseif(min == max) then
 		if unit == "pet" then
 			bar.value:SetText(" ") -- just here if otherwise wanted
@@ -706,7 +704,7 @@ local func = function(self, unit)
 		--
 		self.DebuffHighlight = self.Health:CreateTexture(nil, "OVERLAY")
 		self.DebuffHighlight:SetAllPoints(self.Health)
-		self.DebuffHighlight:SetTexture("Interface\\AddOns\\oUF_Lyn\\textures\\highlight.tga")
+		self.DebuffHighlight:SetTexture("Interface\\AddOns\\oUF_Dys\\textures\\highlight.tga")
 		self.DebuffHighlight:SetBlendMode("ADD")
 		self.DebuffHighlight:SetVertexColor(0, 0, 0, 0)
 		self.DebuffHighlightAlpha = 0.8
