@@ -48,9 +48,9 @@ local playerClass = select(2, UnitClass("player"))
 
 -- castbar position
 local playerCastBar_x = 0
-local playerCastBar_y = -350
+local playerCastBar_y = -260
 local targetCastBar_x = 11
-local targetCastBar_y = -250
+local targetCastBar_y = -160
 
 -- ------------------------------------------------------------------------
 -- change some colors :)
@@ -744,9 +744,9 @@ end
 --
 -- normal frames
 --
-oUF:RegisterStyle("Lyn", func)
+oUF:RegisterStyle("Dys", func)
 
-oUF:SetActiveStyle("Lyn")
+oUF:SetActiveStyle("Dys")
 local player = oUF:Spawn("player", "oUF_Player")
 player:SetPoint("CENTER", -300, -260)
 local target = oUF:Spawn("target", "oUF_Target")

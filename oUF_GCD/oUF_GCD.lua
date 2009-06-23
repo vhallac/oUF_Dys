@@ -1,3 +1,4 @@
+local oUF = oUF_Dys
 if not oUF then return end
 --[[
 oUF_GCD - Global Cooldown timer for oUF
