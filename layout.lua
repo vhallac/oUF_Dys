@@ -1,11 +1,11 @@
 ﻿--[[
-	
+
 	oUF_Lyn
 
 	Author:		Lyn
 	Mail:		post@endlessly.de
 	URL:		http://www.wowinterface.com/list.php?skinnerid=62149
-	
+
 	Credits:	oUF_TsoHG (used as base) / http://www.wowinterface.com/downloads/info8739-oUF_TsoHG.html
 				Rothar for buff border (and Neal for the edited version)
 				p3lim for party toggle function
@@ -34,6 +34,7 @@ local RAID_CLASS_COLORS = RAID_CLASS_COLORS
 local font = "Interface\\AddOns\\oUF_Lyn\\fonts\\font.ttf"
 local upperfont = "Interface\\AddOns\\oUF_Lyn\\fonts\\upperfont.ttf"
 local fontsize = 15
+local smallfontsize = 12
 local bartex = "Interface\\AddOns\\oUF_Lyn\\textures\\statusbar"
 local bufftex = "Interface\\AddOns\\oUF_Lyn\\textures\\border"
 local playerClass = select(2, UnitClass("player"))
@@ -100,11 +101,11 @@ end
 local updateLevel = function(self, unit, name)
 	local lvl = UnitLevel(unit)
 	local typ = UnitClassification(unit)
-	
-	local color = GetDifficultyColor(lvl)  
-        
+
+	local color = GetDifficultyColor(lvl)
+
 	if lvl <= 0 then	lvl = "??" end
-            
+
 	if typ=="worldboss" then
 	    self.Level:SetText("|cffff0000"..lvl.."b|r")
 	elseif typ=="rareelite" then
@@ -122,13 +123,13 @@ local updateLevel = function(self, unit, name)
 		else
 			self.Level:SetText(lvl)
 		end
-		if(not UnitIsPlayer(unit)) then  
+		if(not UnitIsPlayer(unit)) then
 			self.Level:SetTextColor(color.r, color.g, color.b)
 		else
-			local _, class = UnitClass(unit) 
-			color = self.colors.class[class] 
-			self.Level:SetTextColor(color[1], color[2], color[3])  
-		end			
+			local _, class = UnitClass(unit)
+			color = self.colors.class[class]
+			self.Level:SetTextColor(color[1], color[2], color[3])
+		end
 	end
 end
 
@@ -139,8 +140,8 @@ local updateName = function(self, event, unit)
 	if(self.unit ~= unit) then return end
 
 	local name = UnitName(unit)
-    self.Name:SetText(string.lower(name))
-	
+self.Name:SetText(string.lower(name))
+
 	if unit=="targettarget" then
 		local totName = UnitName(unit)
 		local pName = UnitName("player")
@@ -152,42 +153,42 @@ local updateName = function(self, event, unit)
 	else
 		self.Name:SetTextColor(1,1,1)
 	end
-	   
-    if unit=="target" then -- Show level value on targets only
-		updateLevel(self, unit, name)      
-    end
+
+	if unit=="target" then -- Show level value on targets only
+		updateLevel(self, unit, name)
+	end
 end
 
 -- ------------------------------------------------------------------------
 -- health update
 -- ------------------------------------------------------------------------
-local updateHealth = function(self, event, unit, bar, min, max)  
-    local cur, maxhp
-    if LibMobHealth then 
+local updateHealth = function(self, event, unit, bar, min, max)
+	local cur, maxhp
+	if LibMobHealth then
 		cur, maxhp = LibMobHealth:GetUnitHealth(unit) -- LibMobHealth-4.0 support
-	else 
+	else
 		cur, maxhp = min, max
 	end
-    
-    local d = floor(cur/maxhp*100)
-    
+
+	local d = floor(cur/maxhp*100)
+
 	if(UnitIsDead(unit) or UnitIsGhost(unit)) then
 		bar:SetValue(0)
 		bar.value:SetText"dead"
 	elseif(not UnitIsConnected(unit)) then
 		bar.value:SetText"offline"
-    elseif(unit == "player") then
+	elseif(unit == "player") then
 --VH		if(min ~= max) then
 --			bar.value:SetText("|cff33EE44"..numberize(maxhp-(maxhp-cur)) .."|r.".. d.."%")
-            bar.value:SetText("|cff33EE44"..numberize(cur) .."|r.".. d.."%")
---VH			bar.value:SetText("|cff33EE44"..numberize(maxhp-cur) .."|r.".. d.."%")
---VH		else
+			bar.value:SetText("|cff33EE44"..numberize(cur) .."|r.".. d.."%")
+--VH		bar.value:SetText("|cff33EE44"..numberize(maxhp-cur) .."|r.".. d.."%")
+--VH	else
 --			bar.value:SetText(" ")
---VH		end
+--VH	end
 	elseif(unit == "targettarget") then
 		bar.value:SetText(d.."%")
-    elseif(unit == "target") then
-        if LibMobHealth then -- LibMobHealth-4.0 only for targets
+	elseif(unit == "target") then
+		if LibMobHealth then -- LibMobHealth-4.0 only for targets
 			if(d < 100) then
 				bar.value:SetText("|cff33EE44"..numberize(cur).."|r."..d.."%")
 			else
@@ -199,46 +200,46 @@ local updateHealth = function(self, event, unit, bar, min, max)
 			else
 				bar.value:SetText(" ")
 			end
-        end
+		end
 
 	elseif(min == max) then
-        if unit == "pet" then
+		if unit == "pet" then
 			bar.value:SetText(" ") -- just here if otherwise wanted
 		else
 			bar.value:SetText(" ")
 		end
-    else
-        if((max-min) < max) then
+	else
+		if((max-min) < max) then
 			if unit == "pet" then
 				bar.value:SetText("-"..maxhp-cur) -- negative values as for party, just here if otherwise wanted
 			else
 				bar.value:SetText("-"..maxhp-cur) -- this makes negative values (easier as a healer)
 			end
 	    end
-    end
+	end
 
-    self:UNIT_NAME_UPDATE(event, unit)
+	self:UNIT_NAME_UPDATE(event, unit)
 end
 
 
 -- ------------------------------------------------------------------------
 -- power update
 -- ------------------------------------------------------------------------
-local updatePower = function(self, event, unit, bar, min, max)  
-	if UnitIsPlayer(unit)==nil then 
+local updatePower = function(self, event, unit, bar, min, max)
+	if UnitIsPlayer(unit)==nil then
 		bar.value:SetText()
 	else
 		local color = oUF.colors.power[UnitPowerType(unit)]
-		if(min==0) then 
+		if(min==0) then
 			bar.value:SetText()
 		elseif(UnitIsDead(unit) or UnitIsGhost(unit)) then
 			bar:SetValue(0)
 		elseif(not UnitIsConnected(unit)) then
 			bar.value:SetText()
 --[[ VH
-		elseif unit=="player" then 
+		elseif unit=="player" then
 			if((max-min) > 0) then
-	            bar.value:SetText(max-(max-min))
+				bar.value:SetText(min)
 				if color then
 					bar.value:SetTextColor(color[1], color[2], color[3])
 				else
@@ -246,8 +247,8 @@ local updatePower = function(self, event, unit, bar, min, max)
 				end
 			elseif(min==max) then
 				bar.value:SetText("")
-	        else
-				bar.value:SetText(max)
+			else
+				bar.value:SetText(min)
 				if color then
 					bar.value:SetTextColor(color[1], color[2], color[3])
 				else
@@ -255,16 +256,16 @@ local updatePower = function(self, event, unit, bar, min, max)
 				end
 			end
 ]]--
-        else
+	else
 			if((max-min) > 0) then
-				bar.value:SetText(max-(max-min))
+				bar.value:SetText(min)
 				if color then
 					bar.value:SetTextColor(color[1], color[2], color[3])
 				else
 					bar.value:SetTextColor(0.2, 0.66, 0.93)
 				end
 			else
-				bar.value:SetText(max)
+				bar.value:SetText(min)
 				if color then
 					bar.value:SetTextColor(color[1], color[2], color[3])
 				else
@@ -279,19 +280,19 @@ end
 -- aura reskin
 -- ------------------------------------------------------------------------
 local auraIcon = function(self, button, icons)
-	icons.showDebuffType = true -- show debuff border type color  
-	
+	icons.showDebuffType = true -- show debuff border type color
+
 	button.icon:SetTexCoord(.07, .93, .07, .93)
 	button.icon:SetPoint("TOPLEFT", button, "TOPLEFT", 1, -1)
 	button.icon:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
-	
+
 	button.overlay:SetTexture(bufftex)
 	button.overlay:SetTexCoord(0,1,0,1)
 	button.overlay.Hide = function(self) self:SetVertexColor(0.3, 0.3, 0.3) end
-	
+
 	button.cd:SetReverse()
-	button.cd:SetPoint("TOPLEFT", button, "TOPLEFT", 2, -2) 
-	button.cd:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -2, 2)     
+	button.cd:SetPoint("TOPLEFT", button, "TOPLEFT", 2, -2)
+	button.cd:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -2, 2)
 end
 
 -- ------------------------------------------------------------------------
@@ -302,7 +303,7 @@ local func = function(self, unit)
 
 	self:SetScript("OnEnter", UnitFrame_OnEnter)
 	self:SetScript("OnLeave", UnitFrame_OnLeave)
-    
+
 	self:RegisterForClicks"anyup"
 	self:SetAttribute("*type2", "menu")
 
@@ -314,14 +315,14 @@ local func = function(self, unit)
 	insets = {left = -2, right = -2.5, top = -2.5, bottom = -2},
 	}
 	self:SetBackdropColor(0,0,0,1) -- and color the backgrounds
-    
+
 	--
 	-- healthbar
 	--
 	self.Health = CreateFrame"StatusBar"
 	self.Health:SetHeight(19) -- Custom height
 	self.Health:SetStatusBarTexture(bartex)
-    self.Health:SetParent(self)
+	self.Health:SetParent(self)
 	self.Health:SetPoint"TOP"
 	self.Health:SetPoint"LEFT"
 	self.Health:SetPoint"RIGHT"
@@ -331,8 +332,8 @@ local func = function(self, unit)
 	self.Health.bg = self.Health:CreateTexture(nil, "BORDER")
 	self.Health.bg:SetAllPoints(self.Health)
 	self.Health.bg:SetTexture(bartex)
-	self.Health.bg:SetAlpha(0.30)  
-	
+	self.Health.bg:SetAlpha(0.30)
+
 	--
 	-- healthbar text
 	--
@@ -345,11 +346,11 @@ local func = function(self, unit)
 	--
 	-- healthbar functions
 	--
-	self.Health.colorClass = true 
-	self.Health.colorReaction = true 
-	self.Health.colorDisconnected = true 
-	self.Health.colorTapping = true  
-	self.PostUpdateHealth = updateHealth -- let the colors be  
+	self.Health.colorClass = true
+	self.Health.colorReaction = true
+	self.Health.colorDisconnected = true
+	self.Health.colorTapping = true
+	self.PostUpdateHealth = updateHealth -- let the colors be
 
 	--
 	-- powerbar
@@ -368,37 +369,41 @@ local func = function(self, unit)
 	self.Power.bg = self.Power:CreateTexture(nil, "BORDER")
 	self.Power.bg:SetAllPoints(self.Power)
 	self.Power.bg:SetTexture(bartex)
-	self.Power.bg:SetAlpha(0.30)  
+	self.Power.bg:SetAlpha(0.30)
 
 	--
 	-- powerbar text
 	--
 	self.Power.value = self.Power:CreateFontString(nil, "OVERLAY")
-    self.Power.value:SetPoint("RIGHT", self.Health.value, "BOTTOMRIGHT", 0, -5) -- powerbar text in health box
+	self.Power.value:SetPoint("RIGHT", self.Health.value, "BOTTOMRIGHT", 0, -5) -- powerbar text in health box
 	self.Power.value:SetFont(font, fontsize, "OUTLINE")
 	self.Power.value:SetTextColor(1,1,1)
 	self.Power.value:SetShadowOffset(1, -1)
-    self.Power.value:Hide()
-    
-    --
+	self.Power.value:Hide()
+
+	--
 	-- powerbar functions
 	--
-	self.Power.colorTapping = true 
-	self.Power.colorDisconnected = true 
-	self.Power.colorClass = true 
-	self.Power.colorPower = true 
-	self.Power.colorHappiness = false  
-	self.PostUpdatePower = updatePower -- let the colors be  
+	self.Power.colorTapping = true
+	self.Power.colorDisconnected = true
+	self.Power.colorClass = true
+	self.Power.colorPower = true
+	self.Power.colorHappiness = false
+	self.PostUpdatePower = updatePower -- let the colors be
 
 	--
 	-- names
 	--
 	self.Name = self.Health:CreateFontString(nil, "OVERLAY")
-    self.Name:SetPoint("LEFT", self, 0, 9)
-    self.Name:SetJustifyH"LEFT"
-	self.Name:SetFont(font, fontsize, "OUTLINE")
+	self.Name:SetPoint("LEFT", self, 0, 9)
+	self.Name:SetJustifyH"LEFT"
+	if unit=="player" or unit=="target" then
+		self.Name:SetFont(font, fontsize, "OUTLINE")
+	else
+		self.Name:SetFont(font, smallfontsize, "OUTLINE")
+	end
 	self.Name:SetShadowOffset(1, -1)
-    self.UNIT_NAME_UPDATE = updateName
+	self.UNIT_NAME_UPDATE = updateName
 
 	--
 	-- level
@@ -407,10 +412,10 @@ local func = function(self, unit)
 	self.Level:SetPoint("LEFT", self.Health, 0, 9)
 	self.Level:SetJustifyH("LEFT")
 	self.Level:SetFont(font, fontsize, "OUTLINE")
-    self.Level:SetTextColor(1,1,1)
+	self.Level:SetTextColor(1,1,1)
 	self.Level:SetShadowOffset(1, -1)
 	self.UNIT_LEVEL = updateLevel
-    
+
 	--
 	-- debuffs
 	--
@@ -420,51 +425,54 @@ local func = function(self, unit)
 	self.Debuffs:SetWidth(self.Debuffs.size * 5)
 	self.Debuffs:SetPoint("LEFT", self, "RIGHT", 5, 0)
 	self.Debuffs.initialAnchor = "TOPLEFT"
-    self.Debuffs.filter = true
+	self.Debuffs.filter = true
 	self.Debuffs.spacing = 2
 	self.Debuffs.num = 2 -- max debuffs
-	
+
 	-- ------------------------------------
 	-- player
 	-- ------------------------------------
-    if unit=="player" then
-        self:SetWidth(250)
-      	self:SetHeight(27)
+	if unit=="player" then
+		self:SetWidth(250)
+		self:SetHeight(27)
 		self.Health:SetHeight(15.5)
 		self.Name:Hide()
 		self.Health.value:SetPoint("RIGHT", 0, 9)
-	    self.Power:SetHeight(10)
-        self.Power.value:Show()
+		self.Power:SetHeight(10)
+		self.Power.value:Show()
 		self.Power.value:SetPoint("LEFT", self.Health, 0, 9)
 		self.Power.value:SetJustifyH"LEFT"
-        self.Debuffs:Hide()
+		self.Debuffs:Hide()
 		self.Level:Hide()
-		
+
 		if(playerClass=="DRUID") then
-            self.DruidMana = CreateFrame('StatusBar', nil, self)
-            self.DruidMana:SetPoint('TOP', self, 'BOTTOM', 0, -3)
-            self.DruidMana:SetStatusBarTexture(bartex)
-            self.DruidMana:SetStatusBarColor(0.3, 0.3, 1)
-            self.DruidMana:SetHeight(3)
-            self.DruidMana:SetPoint"LEFT"
-            self.DruidMana:SetPoint"RIGHT"
-
-            local druidtext = self.DruidMana:CreateFontString(nil, "OVERLAY")
-			druidtext:SetFont(font, fontsize/1.5, "OUTLINE")
-			druidtext:SetTextColor(.3,.3,1)
-			druidtext:SetPoint("TOP", self.DruidMana, "BOTTOM", 0, 5)
-			--self.DruidManaText = druidtext
-            self.DruidMana.text = druidtext
-
-			--[[
-			self.DruidManaText = hp:CreateFontString(nil, 'OVERLAY')
-			self.DruidManaText:SetPoint("CENTER", hp, "CENTER", 0, 9)
-			self.DruidManaText:SetFont(font, fontsize, "OUTLINE")
+			-- bar
+			self.DruidMana = CreateFrame('StatusBar', nil, self)
+			self.DruidMana:SetPoint('BOTTOM', self, 'TOP', 0, 14)
+			self.DruidMana:SetStatusBarTexture(bartex)
+			self.DruidMana:SetStatusBarColor(45/255, 113/255, 191/255)
+			self.DruidMana:SetHeight(10)
+			self.DruidMana:SetWidth(250)
+			-- bar bg
+			self.DruidMana.bg = self.DruidMana:CreateTexture(nil, "BORDER")
+			self.DruidMana.bg:SetAllPoints(self.DruidMana)
+			self.DruidMana.bg:SetTexture(bartex)
+			self.DruidMana.bg:SetAlpha(0.30)
+			-- black bg
+			self.DruidMana:SetBackdrop{
+				bgFile = "Interface\\ChatFrame\\ChatFrameBackground", tile = true, tileSize = 16,
+				insets = {left = -2, right = -2.5, top = -2.5, bottom = -2},
+				}
+			self.DruidMana:SetBackdropColor(0,0,0,1)
+			-- text
+			self.DruidManaText = self.DruidMana:CreateFontString(nil, 'OVERLAY')
+			self.DruidManaText:SetPoint("CENTER", self.DruidMana, "CENTER", 0, 1)
+			self.DruidManaText:SetFont(font, 12, "OUTLINE")
 			self.DruidManaText:SetTextColor(1,1,1)
-			self.DruidManaText:SetJustifyH('LEFT')
-			--]]
+			self.DruidManaText:SetShadowOffset(1, -1)
+			self.DruidMana.text = self.DruidManaText
 		end
-		
+
 		--
 		-- leader icon
 		--
@@ -473,7 +481,7 @@ local func = function(self, unit)
 		self.Leader:SetWidth(12)
 		self.Leader:SetPoint("BOTTOMRIGHT", self, -2, 4)
 		self.Leader:SetTexture"Interface\\GroupFrame\\UI-Group-LeaderIcon"
-		
+
 		--
 		-- raid target icons
 		--
@@ -482,20 +490,26 @@ local func = function(self, unit)
 		self.RaidIcon:SetWidth(16)
 		self.RaidIcon:SetPoint("TOP", self, 0, 9)
 		self.RaidIcon:SetTexture"Interface\\TargetingFrame\\UI-RaidTargetingIcons"
-        
+
 		--
 		-- oUF_PowerSpark support
 		--
-        self.Spark = self.Power:CreateTexture(nil, "OVERLAY")
+		self.Spark = self.Power:CreateTexture(nil, "OVERLAY")
 		self.Spark:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
 		self.Spark:SetVertexColor(1, 1, 1, 1)
 		self.Spark:SetBlendMode("ADD")
 		self.Spark:SetHeight(self.Power:GetHeight()*2.5)
 		self.Spark:SetWidth(self.Power:GetHeight()*2)
-        -- self.Spark.rtl = true -- Make the spark go from Right To Left instead
+		-- self.Spark.rtl = true -- Make the spark go from Right To Left instead
 		-- self.Spark.manatick = true -- Show mana regen ticks outside FSR (like the energy ticker)
 		-- self.Spark.highAlpha = 1 	-- What alpha setting to use for the FSR and energy spark
 		-- self.Spark.lowAlpha = 0.25 -- What alpha setting to use for the mana regen ticker
+
+		--
+		-- oUF_BarFader
+		--
+		self.BarFade = true
+		self.BarFadeAlpha = 0.2
 	end
 
 	-- ------------------------------------
@@ -505,22 +519,28 @@ local func = function(self, unit)
 		self:SetWidth(120)
 		self:SetHeight(18)
 		self.Health:SetHeight(18)
-		self.Power:Hide()
+		--VH:self.Power:Hide()
 		self.Health.value:Hide()
 		self.Level:Hide()
-		self.Name:Hide()
-		
+		--VH:self.Name:Hide()
+
 		if playerClass=="HUNTER" then
 			self.Health.colorReaction = false
 			self.Health.colorClass = false
-			self.Health.colorHappiness = true  
+			self.Health.colorHappiness = true
 		end
+
+		--
+		-- oUF_BarFader
+		--
+		self.BarFade = true
+		self.BarFadeAlpha = 0.2
 	end
-	
+
 	-- ------------------------------------
 	-- target
 	-- ------------------------------------
-    if unit=="target" then
+	if unit=="target" then
 		self:SetWidth(250)
 		self:SetHeight(27)
 		self.Health:SetHeight(15.5)
@@ -530,9 +550,9 @@ local func = function(self, unit)
 		self.Name:SetPoint("LEFT", self.Level, "RIGHT", 0, 0)
 		self.Name:SetHeight(20)
 		self.Name:SetWidth(150)
-			
+
 		self.Health.colorClass = false
-		
+
 		--
 		-- combo points
 		--
@@ -542,9 +562,9 @@ local func = function(self, unit)
 			self.CPoints:SetFont(font, 38, "OUTLINE")
 			self.CPoints:SetTextColor(0, 0.81, 1)
 			self.CPoints:SetShadowOffset(1, -1)
-			self.CPoints:SetJustifyH"RIGHT" 
+			self.CPoints:SetJustifyH"RIGHT"
 		end
-		
+
 		--
 		-- raid target icons
 		--
@@ -553,7 +573,7 @@ local func = function(self, unit)
 		self.RaidIcon:SetWidth(24)
 		self.RaidIcon:SetPoint("RIGHT", self, 30, 0)
 		self.RaidIcon:SetTexture"Interface\\TargetingFrame\\UI-RaidTargetingIcons"
-	
+
 		--
 		-- buffs
 		--
@@ -566,7 +586,7 @@ local func = function(self, unit)
 		self.Buffs["growth-y"] = "TOP"
 		self.Buffs.num = 20
 		self.Buffs.spacing = 2
-		
+
 		--
 		-- debuffs
 		--
@@ -581,11 +601,12 @@ local func = function(self, unit)
 		self.Debuffs.num = 40
 		self.Debuffs.spacing = 2
 	end
-	
+
 	-- ------------------------------------
 	-- target of target and focus
 	-- ------------------------------------
-	if unit=="targettarget" or unit=="focus" then
+	--VH if unit=="targettarget" or unit=="focus" then
+	if unit=="targettarget" or unit=="focus" or unit=="mouseover" or unit=="mouseovertarget" then
 		self:SetWidth(120)
 		self:SetHeight(18)
 		self.Health:SetHeight(18)
@@ -595,7 +616,7 @@ local func = function(self, unit)
 		self.Debuffs:Hide()
 		self.Name:SetWidth(95)
 		self.Name:SetHeight(18)
-		
+
 		--
 		-- raid target icons
 		--
@@ -604,57 +625,65 @@ local func = function(self, unit)
 		self.RaidIcon:SetWidth(16)
 		self.RaidIcon:SetPoint("RIGHT", self, 0, 9)
 		self.RaidIcon:SetTexture"Interface\\TargetingFrame\\UI-RaidTargetingIcons"
+
+		--
+		-- oUF_BarFader
+		--
+		if unit=="focus" then
+			self.BarFade = true
+			self.BarFadeAlpha = 0.2
+		end
 	end
-	
+
 
 	-- ------------------------------------
 	-- player and target castbar
 	-- ------------------------------------
-    if nil then -- VEDAT: Don't want no castbars
+	if nil then -- VH: Don't want no castbars
 	if(unit == 'player' or unit == 'target') then
 	    self.Castbar = CreateFrame('StatusBar', nil, self)
 	    self.Castbar:SetStatusBarTexture(bartex)
-	    		
+
 		if(unit == "player") then
 			self.Castbar:SetStatusBarColor(1, 0.50, 0)
-			self.Castbar:SetHeight(27)
+			self.Castbar:SetHeight(24)
 			self.Castbar:SetWidth(260)
-			
+
 			self.Castbar:SetBackdrop({
 				bgFile = [[Interface\ChatFrame\ChatFrameBackground]],
 				insets = {top = -3, left = -3, bottom = -3, right = -3}})
-				
-			self.Castbar.safezone = self.Castbar:CreateTexture(nil,"ARTWORK")
-			self.Castbar.safezone:SetTexture(bartex)
-			self.Castbar.safezone:SetVertexColor(.75,.10,.10,.6)
-			self.Castbar.safezone:SetPoint("TOPRIGHT")
-			self.Castbar.safezone:SetPoint("BOTTOMRIGHT")
-			
-			self.Castbar:SetPoint('CENTER', UIParent, 'CENTER', 0, -260)
+
+			self.Castbar.SafeZone = self.Castbar:CreateTexture(nil,"ARTWORK")
+			self.Castbar.SafeZone:SetTexture(bartex)
+			self.Castbar.SafeZone:SetVertexColor(.75,.10,.10,.6)
+			self.Castbar.SafeZone:SetPoint("TOPRIGHT")
+			self.Castbar.SafeZone:SetPoint("BOTTOMRIGHT")
+
+			self.Castbar:SetPoint('CENTER', UIParent, 'CENTER', 0, -350)
 		else
 			self.Castbar:SetStatusBarColor(0.80, 0.01, 0)
 			self.Castbar:SetHeight(24)
 			self.Castbar:SetWidth(286)
-			
+
 			self.Castbar:SetBackdrop({
 				bgFile = [[Interface\ChatFrame\ChatFrameBackground]],
 				insets = {top = -3, left = -29, bottom = -3, right = -3}})
-			
+
 			self.Castbar.Icon = self.Castbar:CreateTexture(nil, 'OVERLAY')
 			self.Castbar.Icon:SetPoint("RIGHT", self.Castbar, "LEFT", -3, 0)
 			self.Castbar.Icon:SetHeight(22)
 			self.Castbar.Icon:SetWidth(22)
 			self.Castbar.Icon:SetTexCoord(0.1,0.9,0.1,0.9)
-			
+
 			self.Castbar:SetPoint('CENTER', UIParent, 'CENTER', 11, -220)
 		end
-		
+
 		self.Castbar:SetBackdropColor(0, 0, 0, 0.5)
 
 	    self.Castbar.bg = self.Castbar:CreateTexture(nil, 'BORDER')
 	    self.Castbar.bg:SetAllPoints(self.Castbar)
 	    self.Castbar.bg:SetTexture(0, 0, 0, 0.6)
-		
+
 		self.Castbar.Text = self.Castbar:CreateFontString(nil, 'OVERLAY')
 	    self.Castbar.Text:SetPoint('LEFT', self.Castbar, 2, 0)
 	    self.Castbar.Text:SetFont(upperfont, 11, "OUTLINE")
@@ -667,13 +696,13 @@ local func = function(self, unit)
 	    self.Castbar.Time:SetFont(upperfont, 12, "OUTLINE")
 	    self.Castbar.Time:SetTextColor(1, 1, 1)
 	    self.Castbar.Time:SetJustifyH('RIGHT')
-        
-	end
-    end -- VEDAT: Don't want no castbars
 
-	
+	end
+	end -- VEDAT: Don't want no castbars
+
+
 	-- ------------------------------------
-	-- party 
+	-- party
 	-- ------------------------------------
 	if(self:GetParent():GetName():match"oUF_Party") then
 		self:SetWidth(160)
@@ -683,7 +712,7 @@ local func = function(self, unit)
 		self.Power.value:Hide()
 		self.Health.value:SetPoint("RIGHT", 0 , 9)
 		self.Name:SetPoint("LEFT", 0, 9)
-		
+
 		--
 		-- raid target icons
 		--
@@ -695,14 +724,14 @@ local func = function(self, unit)
 	end
 
 	-- ------------------------------------
-	-- raid 
+	-- raid
 	-- ------------------------------------
-    if(self:GetParent():GetName():match"oUF_Raid") then
-		self:SetWidth(85) 
+	if(self:GetParent():GetName():match"oUF_Raid") then
+		self:SetWidth(85)
 		self:SetHeight(15)
 		self.Health:SetHeight(15)
 		self.Power:Hide()
-		self.Health:SetFrameLevel(2) 
+		self.Health:SetFrameLevel(2)
 		self.Power:SetFrameLevel(2)
 		self.Health.value:Hide()
 		self.Power.value:Hide()
@@ -710,7 +739,7 @@ local func = function(self, unit)
 		self.Name:SetFont(font, 12, "OUTLINE")
 		self.Name:SetWidth(85)
 		self.Name:SetHeight(15)
-		
+
 		--
 		-- oUF_DebuffHighlight support
 		--
@@ -721,8 +750,8 @@ local func = function(self, unit)
 		self.DebuffHighlight:SetVertexColor(0, 0, 0, 0)
 		self.DebuffHighlightAlpha = 0.8
 		self.DebuffHighlightFilter = true
-    end
-    
+		end
+
 	--
 	-- fading for party and raid
 	--
@@ -730,23 +759,23 @@ local func = function(self, unit)
 		self.Range = false -- put true to make party/raid frames fade out if not in your range
 		self.inRangeAlpha = 1.0 -- what alpha if IN range
 		self.outsideRangeAlpha = 0.5 -- the alpha it will fade out to if not in range
-    end
+	end
 
 	--
 	-- custom aura textures
 	--
 	self.PostCreateAuraIcon = auraIcon
 	self.SetAuraPosition = auraOffset
-	
+
 	if(self:GetParent():GetName():match"oUF_Party") then
-		self:SetAttribute('initial-height', 20) 
-		self:SetAttribute('initial-width', 160) 
-	else 
-		self:SetAttribute('initial-height', height) 
-		self:SetAttribute('initial-width', width) 
-	end  
-	
-	return self   
+		self:SetAttribute('initial-height', 20)
+		self:SetAttribute('initial-width', 160)
+	else
+		self:SetAttribute('initial-height', height)
+		self:SetAttribute('initial-width', width)
+	end
+
+	return self
 end
 
 -- ------------------------------------------------------------------------
@@ -762,13 +791,17 @@ oUF:SetActiveStyle("Lyn")
 local player = oUF:Spawn("player", "oUF_Player")
 player:SetPoint("CENTER", -300, -260)
 local target = oUF:Spawn("target", "oUF_Target")
-target:SetPoint("CENTER", 300, -260) 
+target:SetPoint("CENTER", 300, -260)
 local pet = oUF:Spawn("pet", "oUF_Pet")
 pet:SetPoint("BOTTOMLEFT", player, 0, -30)
 local tot = oUF:Spawn("targettarget", "oUF_TargetTarget")
 tot:SetPoint("TOPRIGHT", target, 0, 35)
 local focus	= oUF:Spawn("focus", "oUF_Focus")
-focus:SetPoint("BOTTOMRIGHT", player, 0, -30) 
+focus:SetPoint("BOTTOMRIGHT", player, 0, -30)
+local mouseover = oUF:Spawn("mouseover", "oUF_MO")
+mouseover:SetPoint("BOTTOMLEFT", pet, 0, -30)
+local mouseovertarget = oUF:Spawn("mouseovertarget", "oUF_MOT")
+mouseovertarget:SetPoint("BOTTOMLEFT", focus, 0, -30)
 
 --
 -- party
@@ -793,9 +826,9 @@ for i = 1, NUM_RAID_GROUPS do
 	RaidGroup:SetAttribute("showRaid", true)
 	table.insert(Raid, RaidGroup)
 	if i == 1 then
-		RaidGroup:SetPoint("TOPLEFT", UIParent, 35, -35) 
+		RaidGroup:SetPoint("TOPLEFT", UIParent, 35, -35)
 	else
-		RaidGroup:SetPoint("TOPLEFT", Raid[i-1], "TOPRIGHT", 10, 0)	
+		RaidGroup:SetPoint("TOPLEFT", Raid[i-1], "TOPRIGHT", 10, 0)
 	end
 	RaidGroup:Show()
 end
