@@ -94,12 +94,12 @@ local updateLevel = function(self, unit, name)
 	if lvl <= 0 then	lvl = "??" end
 
 	if typ=="worldboss" then
-	    self.Level:SetText("|cffff0000"..lvl.."b|r")
+		self.Level:SetText("|cffff0000"..lvl.."b|r")
 	elseif typ=="rareelite" then
-	    self.Level:SetText(lvl.."r+")
+		self.Level:SetText(lvl.."r+")
 		self.Level:SetTextColor(color.r, color.g, color.b)
 	elseif typ=="elite" then
-	    self.Level:SetText(lvl.."+")
+		self.Level:SetText(lvl.."+")
 		self.Level:SetTextColor(color.r, color.g, color.b)
 	elseif typ=="rare" then
 		self.Level:SetText(lvl.."r")
@@ -149,11 +149,11 @@ end
 -- ------------------------------------------------------------------------
 -- health update
 -- ------------------------------------------------------------------------
-local updateHealth = function(self, event, unit, bar, min, max)  
+local updateHealth = function(self, event, unit, bar, min, max)
 	local cur, maxhp = min, max
-    
+
 local d = floor(cur/maxhp*100)
-    
+
 	if(UnitIsDead(unit) or UnitIsGhost(unit)) then
 		bar:SetValue(0)
 		bar.value:SetText"dead"
@@ -187,7 +187,7 @@ local d = floor(cur/maxhp*100)
 			else
 				bar.value:SetText("-"..maxhp-cur) -- this makes negative values (easier as a healer)
 			end
-	    end
+		end
 	end
 
 	self:UNIT_NAME_UPDATE(event, unit)
@@ -203,7 +203,7 @@ local updatePower = function(self, event, unit, bar, min, max)
 	else
 		local _, ptype = UnitPowerType(unit)
 		local color = oUF.colors.power[ptype]
-		if(min==0) then 
+		if(min==0) then
 			bar.value:SetText()
 		elseif(UnitIsDead(unit) or UnitIsGhost(unit)) then
 			bar:SetValue(0)
@@ -403,7 +403,7 @@ local func = function(self, unit)
 		self.Power.value:SetPoint("LEFT", self.Health, 0, 9)
 		self.Power.value:SetJustifyH"LEFT"
 		self.Level:Hide()
-		
+
 		if(playerClass=="DRUID") then
 			-- bar
 			self.DruidMana = CreateFrame('StatusBar', nil, self)
@@ -595,10 +595,10 @@ local func = function(self, unit)
 
 	-- ------------------------------------
 	-- player and target castbar
-	-- ------------------------------------	
+	-- ------------------------------------
 	if(unit == 'player' or unit == 'target') then
-	    self.Castbar = CreateFrame('StatusBar', nil, self)
-	    self.Castbar:SetStatusBarTexture(bartex)
+		self.Castbar = CreateFrame('StatusBar', nil, self)
+		self.Castbar:SetStatusBarTexture(bartex)
 
 		if(unit == "player") then
 			self.Castbar:SetStatusBarColor(1, 0.50, 0)
@@ -614,7 +614,7 @@ local func = function(self, unit)
 			self.Castbar.SafeZone:SetVertexColor(.75,.10,.10,.6)
 			self.Castbar.SafeZone:SetPoint("TOPRIGHT")
 			self.Castbar.SafeZone:SetPoint("BOTTOMRIGHT")
-			
+
 			self.Castbar:SetPoint('CENTER', UIParent, 'CENTER', playerCastBar_x, playerCastBar_y)
 		else
 			self.Castbar:SetStatusBarColor(0.80, 0.01, 0)
@@ -624,7 +624,7 @@ local func = function(self, unit)
 			self.Castbar:SetBackdrop({
 				bgFile = "Interface\ChatFrame\ChatFrameBackground",
 				insets = {top = -3, left = -30, bottom = -3, right = -3}})
-			
+
 			self.Castbar.Icon = self.Castbar:CreateTexture(nil, 'OVERLAY')
 			self.Castbar.Icon:SetPoint("RIGHT", self.Castbar, "LEFT", -3, 0)
 			self.Castbar.Icon:SetHeight(24)
@@ -636,22 +636,22 @@ local func = function(self, unit)
 
 		self.Castbar:SetBackdropColor(0, 0, 0, 0.5)
 
-	    self.Castbar.bg = self.Castbar:CreateTexture(nil, 'BORDER')
-	    self.Castbar.bg:SetAllPoints(self.Castbar)
-	    self.Castbar.bg:SetTexture(0, 0, 0, 0.6)
+		self.Castbar.bg = self.Castbar:CreateTexture(nil, 'BORDER')
+		self.Castbar.bg:SetAllPoints(self.Castbar)
+		self.Castbar.bg:SetTexture(0, 0, 0, 0.6)
 
 		self.Castbar.Text = self.Castbar:CreateFontString(nil, 'OVERLAY')
-	    self.Castbar.Text:SetPoint('LEFT', self.Castbar, 2, 0)
-	    self.Castbar.Text:SetFont(upperfont, 11, "OUTLINE")
+		self.Castbar.Text:SetPoint('LEFT', self.Castbar, 2, 0)
+		self.Castbar.Text:SetFont(upperfont, 11, "OUTLINE")
 		self.Castbar.Text:SetShadowOffset(1, -1)
-	    self.Castbar.Text:SetTextColor(1, 1, 1)
-	    self.Castbar.Text:SetJustifyH('LEFT')
+		self.Castbar.Text:SetTextColor(1, 1, 1)
+		self.Castbar.Text:SetJustifyH('LEFT')
 
-	    self.Castbar.Time = self.Castbar:CreateFontString(nil, 'OVERLAY')
-	    self.Castbar.Time:SetPoint('RIGHT', self.Castbar, -2, 0)
-	    self.Castbar.Time:SetFont(upperfont, 12, "OUTLINE")
-	    self.Castbar.Time:SetTextColor(1, 1, 1)
-	    self.Castbar.Time:SetJustifyH('RIGHT')
+		self.Castbar.Time = self.Castbar:CreateFontString(nil, 'OVERLAY')
+		self.Castbar.Time:SetPoint('RIGHT', self.Castbar, -2, 0)
+		self.Castbar.Time:SetFont(upperfont, 12, "OUTLINE")
+		self.Castbar.Time:SetTextColor(1, 1, 1)
+		self.Castbar.Time:SetJustifyH('RIGHT')
 
 	end
 
@@ -681,7 +681,7 @@ local func = function(self, unit)
 		self.Debuffs.showDebuffType = true
 		self.Debuffs.spacing = 2
 		self.Debuffs.num = 2 -- max debuffs
-		
+
 		--
 		-- raid target icons
 		--
