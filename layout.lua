@@ -179,7 +179,7 @@ local updateHealth = function(self, event, unit, bar, min, max)
     elseif(unit == "player") then
 		if(min ~= max) then
 --			bar.value:SetText("|cff33EE44"..numberize(maxhp-(maxhp-cur)) .."|r.".. d.."%")
-			bar.value:SetText("|cff33EE44"..numberize(maxhp-cur) .."|r.".. d.."%")
+			bar.value:SetText("|cff33EE44"..numberize(cur) .."|r.".. d.."%")
 		else
 			bar.value:SetText(" ")
 		end
@@ -236,7 +236,7 @@ local updatePower = function(self, event, unit, bar, min, max)
 			bar.value:SetText()
 		elseif unit=="player" then 
 			if((max-min) > 0) then
-	            bar.value:SetText(max-(max-min))
+	            bar.value:SetText(min)
 				if color then
 					bar.value:SetTextColor(color[1], color[2], color[3])
 				else
@@ -245,7 +245,7 @@ local updatePower = function(self, event, unit, bar, min, max)
 			elseif(min==max) then
 				bar.value:SetText("")
 	        else
-				bar.value:SetText(max)
+				bar.value:SetText(min)
 				if color then
 					bar.value:SetTextColor(color[1], color[2], color[3])
 				else
@@ -254,14 +254,14 @@ local updatePower = function(self, event, unit, bar, min, max)
 			end
         else
 			if((max-min) > 0) then
-				bar.value:SetText(max-(max-min))
+				bar.value:SetText(min)
 				if color then
 					bar.value:SetTextColor(color[1], color[2], color[3])
 				else
 					bar.value:SetTextColor(0.2, 0.66, 0.93)
 				end
 			else
-				bar.value:SetText(max)
+				bar.value:SetText(min)
 				if color then
 					bar.value:SetTextColor(color[1], color[2], color[3])
 				else
@@ -437,15 +437,32 @@ local func = function(self, unit)
         self.Debuffs:Hide()
 		self.Level:Hide()
 		
-		--if(playerClass=="DRUID") then
-			--[[
-			self.DruidManaText = hp:CreateFontString(nil, 'OVERLAY')
-			self.DruidManaText:SetPoint("CENTER", hp, "CENTER", 0, 9)
-			self.DruidManaText:SetFont(font, fontsize, "OUTLINE")
+		if(playerClass=="DRUID") then
+			-- bar
+			self.DruidMana = CreateFrame('StatusBar', nil, self)
+			self.DruidMana:SetPoint('BOTTOM', self, 'TOP', 0, 14)
+			self.DruidMana:SetStatusBarTexture(bartex)
+			self.DruidMana:SetStatusBarColor(45/255, 113/255, 191/255)
+			self.DruidMana:SetHeight(10)
+			self.DruidMana:SetWidth(250)
+			-- bar bg
+			self.DruidMana.bg = self.DruidMana:CreateTexture(nil, "BORDER")
+			self.DruidMana.bg:SetAllPoints(self.DruidMana)
+			self.DruidMana.bg:SetTexture(bartex)
+			self.DruidMana.bg:SetAlpha(0.30)  
+			-- black bg
+			self.DruidMana:SetBackdrop{
+				bgFile = "Interface\\ChatFrame\\ChatFrameBackground", tile = true, tileSize = 16,
+				insets = {left = -2, right = -2.5, top = -2.5, bottom = -2},
+				}
+			self.DruidMana:SetBackdropColor(0,0,0,1)
+			-- text
+			self.DruidManaText = self.DruidMana:CreateFontString(nil, 'OVERLAY')
+			self.DruidManaText:SetPoint("CENTER", self.DruidMana, "CENTER", 0, 1)
+			self.DruidManaText:SetFont(font, 12, "OUTLINE")
 			self.DruidManaText:SetTextColor(1,1,1)
-			self.DruidManaText:SetJustifyH('LEFT')
-			--]]
---		end
+			self.DruidManaText:SetShadowOffset(1, -1)
+		end
 		
 		--
 		-- leader icon
@@ -478,6 +495,12 @@ local func = function(self, unit)
 		-- self.Spark.manatick = true -- Show mana regen ticks outside FSR (like the energy ticker)
 		-- self.Spark.highAlpha = 1 	-- What alpha setting to use for the FSR and energy spark
 		-- self.Spark.lowAlpha = 0.25 -- What alpha setting to use for the mana regen ticker
+		
+		--
+		-- oUF_BarFader
+		--
+		self.BarFade = true
+		self.BarFadeAlpha = 0.2
 	end
 
 	-- ------------------------------------
@@ -497,6 +520,12 @@ local func = function(self, unit)
 			self.Health.colorClass = false
 			self.Health.colorHappiness = true  
 		end
+		
+		--
+		-- oUF_BarFader
+		--
+		self.BarFade = true
+		self.BarFadeAlpha = 0.2
 	end
 	
 	-- ------------------------------------
@@ -586,6 +615,14 @@ local func = function(self, unit)
 		self.RaidIcon:SetWidth(16)
 		self.RaidIcon:SetPoint("RIGHT", self, 0, 9)
 		self.RaidIcon:SetTexture"Interface\\TargetingFrame\\UI-RaidTargetingIcons"
+		
+		--
+		-- oUF_BarFader
+		--
+		if unit=="focus" then
+			self.BarFade = true
+			self.BarFadeAlpha = 0.2
+		end
 	end
 	
 	-- ------------------------------------
@@ -604,11 +641,11 @@ local func = function(self, unit)
 				bgFile = [[Interface\ChatFrame\ChatFrameBackground]],
 				insets = {top = -3, left = -3, bottom = -3, right = -3}})
 				
-			self.Castbar.safezone = self.Castbar:CreateTexture(nil,"ARTWORK")
-			self.Castbar.safezone:SetTexture(bartex)
-			self.Castbar.safezone:SetVertexColor(.75,.10,.10,.6)
-			self.Castbar.safezone:SetPoint("TOPRIGHT")
-			self.Castbar.safezone:SetPoint("BOTTOMRIGHT")
+			self.Castbar.SafeZone = self.Castbar:CreateTexture(nil,"ARTWORK")
+			self.Castbar.SafeZone:SetTexture(bartex)
+			self.Castbar.SafeZone:SetVertexColor(.75,.10,.10,.6)
+			self.Castbar.SafeZone:SetPoint("TOPRIGHT")
+			self.Castbar.SafeZone:SetPoint("BOTTOMRIGHT")
 			
 			self.Castbar:SetPoint('CENTER', UIParent, 'CENTER', 0, -350)
 		else
