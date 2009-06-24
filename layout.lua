@@ -447,6 +447,21 @@ local func = function(self, unit)
 		--
 		self.BarFade = true
 		self.BarFadeAlpha = 0.2
+
+		--
+		-- debuffs
+		--
+		self.Debuffs = CreateFrame("Frame", nil, self)
+		self.Debuffs.size = 30
+		self.Debuffs:SetHeight(self.Debuffs.size)
+		self.Debuffs:SetWidth(self.Debuffs.size * 9)
+		self.Debuffs:SetPoint("TOPRIGHT", self.Health, "TOPLEFT", -3, 2)
+		self.Debuffs.initialAnchor = "TOPRIGHT"
+		self.Debuffs["growth-x"] = "LEFT"
+		self.Debuffs["growth-y"] = "DOWN"
+		self.Debuffs.filter = false
+		self.Debuffs.num = 40
+		self.Debuffs.spacing = 2
 	end
 
 	-- ------------------------------------
