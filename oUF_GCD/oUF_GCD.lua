@@ -1,4 +1,7 @@
-local oUF = oUF_Dys
+local parent = debugstack():match[[\AddOns\(.-)\]]
+local global = GetAddOnMetadata(parent, 'X-oUF')
+assert(global, 'X-oUF needs to be defined in the parent add-on.')
+local oUF = _G[global]
 if not oUF then return end
 --[[
 oUF_GCD - Global Cooldown timer for oUF

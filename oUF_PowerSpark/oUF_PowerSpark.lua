@@ -1,3 +1,7 @@
+local parent = debugstack():match[[\AddOns\(.-)\]]
+local global = GetAddOnMetadata(parent, 'X-oUF')
+assert(global, 'X-oUF needs to be defined in the parent add-on.')
+local oUF = _G[global]
 if not oUF then return end
 
 local GetTime = GetTime
@@ -117,7 +121,7 @@ function OnEventActive(self, event, unit, combatEvent, sourceGUID, _, _, destGUI
 				end
 				lastSpellTime = nil
 			end
-			
+
 			if mode == 0 then
 				if manatick then
 					-- Hide at full mana for mana ticker
@@ -135,7 +139,7 @@ function OnEventActive(self, event, unit, combatEvent, sourceGUID, _, _, destGUI
 					spark:Show()
 				end
 			end
-			
+
 			if power ~= anticipated and (power ~= maxPower or anticipated < maxPower) then
 				-- This should be a tick
 				timer = 0 -- Resync timer
