@@ -8,7 +8,7 @@
 -- any non-nil value.
 -- i.e.:
 --   self.ignoreBanzai = true
--- 
+--
 -- If you want to handle the banzai status yourself instead of having the health
 -- bar colored red, you can set the 'Banzai' property on your frames to point to
 -- a function.
@@ -18,7 +18,10 @@
 --   end
 --
 --------------------------------------------------------------------------------
-
+local parent = debugstack():match[[\AddOns\(.-)\]]
+local global = GetAddOnMetadata(parent, 'X-oUF')
+assert(global, 'X-oUF needs to be defined in the parent add-on.')
+local oUF = _G[global]
 if not oUF then return end
 
 local banzai = LibStub("LibBanzai-2.0")
