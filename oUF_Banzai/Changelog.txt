@@ -1,0 +1,15 @@
+------------------------------------------------------------------------
+r39 | rabbit | 2009-04-14 11:29:43 +0000 (Tue, 14 Apr 2009) | 1 line
+Changed paths:
+   M /trunk/.pkgmeta
+   D /trunk/libs
+   M /trunk/oUF_Banzai.toc
+
+TOC bump and lib fix.
+------------------------------------------------------------------------
+r38 | rabbit | 2008-12-14 14:07:45 +0000 (Sun, 14 Dec 2008) | 1 line
+Changed paths:
+   M /trunk/oUF_Banzai.lua
+
+Update to work with latest oUF.
+------------------------------------------------------------------------

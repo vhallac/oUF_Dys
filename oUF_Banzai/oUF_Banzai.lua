@@ -57,7 +57,7 @@ banzai:RegisterCallback(function(aggro, name, ...)
 				if aggro == 1 then
 					f.Health:SetStatusBarColor(1, 0, 0)
 				else
-					f:UNIT_HEALTH(nil, u)
+					f:UNIT_MAXHEALTH("OnBanzaiUpdate", f.unit)
 				end
 			end
 		end
