@@ -2,7 +2,8 @@
 ..\FrameXML\UI.xsd">
 
 <Script file="libs\LibStub\LibStub.lua"/>
-<Include file="libs\CallbackHandler-1.0\CallbackHandler-1.0.xml"/> 
+<Include file="libs\CallbackHandler-1.0\CallbackHandler-1.0.xml"/>
 <Include file="libs\LibSharedMedia-3.0\lib.xml"/>
+<Include file="libs\LabBanzai-2.0\lib.xml"/>
 
 </Ui>

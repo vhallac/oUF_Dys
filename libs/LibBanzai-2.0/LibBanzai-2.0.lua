@@ -1,6 +1,6 @@
 --[[
 Name: LibBanzai-2.0
-Revision: $Revision: 35 $
+Revision: $Revision: 40 $
 Author(s): Rabbit (rabbit.magtheridon@gmail.com), maia
 Documentation: http://www.wowace.com/index.php/Banzai-2.0_API_Documentation
 SVN: http://svn.wowace.com/wowace/trunk/BanzaiLib/Banzai-2.0
@@ -13,7 +13,7 @@ Dependencies: LibStub
 -------------------------------------------------------------------------------
 
 local MAJOR_VERSION = "LibBanzai-2.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 35 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 40 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
@@ -134,6 +134,10 @@ local function updateBanzai(_, elapsed)
 			local targetId = targets[unit]
 			if UnitExists(targetId) then
 				local ttId = targets[targetId]
+				if unit == "focus" and UnitIsEnemy("focus", "player") then
+					ttId = "focustarget"
+					targetId = "focus"
+				end
 				if UnitExists(ttId) and UnitCanAttack(ttId, targetId) then
 					for n, u in pairs(roster) do
 						if UnitIsUnit(u[1], ttId) then
