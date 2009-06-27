@@ -90,140 +90,20 @@ local numberize = function(v)
 end
 
 -- ------------------------------------------------------------------------
--- level update
--- ------------------------------------------------------------------------
-local updateLevel = function(self, unit, name)
-	local lvl = UnitLevel(unit)
-	local typ = UnitClassification(unit)
-
-	local color = GetDifficultyColor(lvl)
-
-	if lvl <= 0 then	lvl = "??" end
-
-	if typ=="worldboss" then
-		self.Level:SetText("|cffff0000"..lvl.."b|r")
-	elseif typ=="rareelite" then
-		self.Level:SetText(lvl.."r+")
-		self.Level:SetTextColor(color.r, color.g, color.b)
-	elseif typ=="elite" then
-		self.Level:SetText(lvl.."+")
-		self.Level:SetTextColor(color.r, color.g, color.b)
-	elseif typ=="rare" then
-		self.Level:SetText(lvl.."r")
-		self.Level:SetTextColor(color.r, color.g, color.b)
-	else
-		if UnitIsConnected(unit) == nil then
-			self.Level:SetText("??")
-		else
-			self.Level:SetText(lvl)
-		end
-		if(not UnitIsPlayer(unit)) then
-			self.Level:SetTextColor(color.r, color.g, color.b)
-		else
-			local _, class = UnitClass(unit)
-			color = self.colors.class[class]
-			self.Level:SetTextColor(color[1], color[2], color[3])
-		end
-	end
-end
-
--- ------------------------------------------------------------------------
--- name update
--- ------------------------------------------------------------------------
-local updateName = function(self, event, unit)
-	if(self.unit ~= unit) then return end
-
-	local name = UnitName(unit)
-self.Name:SetText(string.lower(name))
-
-	if unit=="targettarget" then
-		local totName = UnitName(unit)
-		local pName = UnitName("player")
-		if totName==pName then
-			self.Name:SetTextColor(0.9, 0.5, 0.2)
-		else
-			self.Name:SetTextColor(1,1,1)
-		end
-	else
-		self.Name:SetTextColor(1,1,1)
-	end
-
-	if unit=="target" then -- Show level value on targets only
-		updateLevel(self, unit, name)
-	end
-end
-
--- ------------------------------------------------------------------------
 -- health update
 -- ------------------------------------------------------------------------
 local updateHealth = function(self, event, unit, bar, min, max)
-	local cur, maxhp = min, max
-
-local d = floor(cur/maxhp*100)
-
 	if(UnitIsDead(unit) or UnitIsGhost(unit)) then
 		bar:SetValue(0)
-		bar.value:SetText"dead"
-	elseif(not UnitIsConnected(unit)) then
-		bar.value:SetText"offline"
-	elseif(unit == "player") then
-		bar.value:SetText("|cff33EE44"..numberize(cur) .."|r.".. d.."%")
-	elseif(unit == "targettarget") then
-		bar.value:SetText(d.."%")
-	elseif(unit == "target") then
-		bar.value:SetText("|cff33EE44"..numberize(cur).."|r."..d.."%")
-	elseif(min == max) then
-		if unit == "pet" then
-			bar.value:SetText(" ") -- just here if otherwise wanted
-		else
-			bar.value:SetText(" ")
-		end
-	else
-		if((max-min) < max) then
-			if unit == "pet" then
-				bar.value:SetText("-"..maxhp-cur) -- negative values as for party, just here if otherwise wanted
-			else
-				bar.value:SetText("-"..maxhp-cur) -- this makes negative values (easier as a healer)
-			end
-		end
 	end
-
-	self:UNIT_NAME_UPDATE(event, unit)
 end
-
 
 -- ------------------------------------------------------------------------
 -- power update
 -- ------------------------------------------------------------------------
 local updatePower = function(self, event, unit, bar, min, max)
-	if UnitIsPlayer(unit)==nil then
-		bar.value:SetText()
-	else
-		local _, ptype = UnitPowerType(unit)
-		local color = oUF.colors.power[ptype]
-		if(min==0) then
-			bar.value:SetText()
-		elseif(UnitIsDead(unit) or UnitIsGhost(unit)) then
-			bar:SetValue(0)
-		elseif(not UnitIsConnected(unit)) then
-			bar.value:SetText()
-	else
-			if((max-min) > 0) then
-				bar.value:SetText(min)
-				if color then
-					bar.value:SetTextColor(color[1], color[2], color[3])
-				else
-					bar.value:SetTextColor(0.2, 0.66, 0.93)
-				end
-			else
-				bar.value:SetText(min)
-				if color then
-					bar.value:SetTextColor(color[1], color[2], color[3])
-				else
-					bar.value:SetTextColor(0.2, 0.66, 0.93)
-				end
-			end
-		end
+	if UnitIsPlayer(unit) and min ~=0 and (UnitIsDead(unit) or UnitIsGhost(unit)) then
+		bar:SetValue(0)
 	end
 end
 
@@ -244,6 +124,22 @@ local auraIcon = function(self, button, icons)
 	button.cd:SetReverse()
 	button.cd:SetPoint("TOPLEFT", button, "TOPLEFT", 2, -2)
 	button.cd:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -2, 2)
+end
+
+-- ------------------------------------------------------------------------
+-- Some tags I want
+-- ------------------------------------------------------------------------
+oUF.TagEvents["[dyscurhp]"] = "UNIT_HEALTH"
+oUF.Tags["[dyscurhp]"] = function(u)
+	local text=""
+	if UnitIsDead(u) or UnitIsGhost(u) then
+		text = "|cff2000dead|r"
+	elseif not UnitIsConnected(u) then
+		text = "|cff808080offline|r"
+	else
+		text = "|cff33EE44"..numberize(UnitHealth(u)) .."|r"
+	end
+	return text
 end
 
 -- ------------------------------------------------------------------------
@@ -286,15 +182,6 @@ local func = function(self, unit)
 	self.Health.bg:SetAlpha(0.30)
 
 	--
-	-- healthbar text
-	--
-	self.Health.value = self.Health:CreateFontString(nil, "OVERLAY")
-	self.Health.value:SetPoint("RIGHT", -2, 2)
-	self.Health.value:SetFont(font, fontsize, "OUTLINE")
-	self.Health.value:SetTextColor(1,1,1)
-	self.Health.value:SetShadowOffset(1, -1)
-
-	--
 	-- healthbar functions
 	--
 	self.Health.colorClass = true
@@ -323,16 +210,6 @@ local func = function(self, unit)
 	self.Power.bg:SetAlpha(0.30)
 
 	--
-	-- powerbar text
-	--
-	self.Power.value = self.Power:CreateFontString(nil, "OVERLAY")
-	self.Power.value:SetPoint("RIGHT", self.Health.value, "BOTTOMRIGHT", 0, -5) -- powerbar text in health box
-	self.Power.value:SetFont(font, fontsize, "OUTLINE")
-	self.Power.value:SetTextColor(1,1,1)
-	self.Power.value:SetShadowOffset(1, -1)
-	self.Power.value:Hide()
-
-	--
 	-- powerbar functions
 	--
 	self.Power.colorTapping = true
@@ -343,29 +220,32 @@ local func = function(self, unit)
 	self.PostUpdatePower = updatePower -- let the colors be
 
 	--
-	-- names
+	-- Info Line
 	--
-	self.Name = self.Health:CreateFontString(nil, "OVERLAY")
-	self.Name:SetPoint("LEFT", self, 0, 9)
-	self.Name:SetJustifyH"LEFT"
-	if unit=="player" or unit=="target" then
-		self.Name:SetFont(font, fontsize, "OUTLINE")
+	self.InfoLeft = self.Health:CreateFontString(nil, "OVERLAY")
+	self.InfoLeft:SetPoint("LEFT", self, 0, 15)
+	self.InfoLeft:SetJustifyH("LEFT")
+	self.InfoLeft:SetShadowOffset(1, -1)
+	self.InfoRight = self.Health:CreateFontString(nil, "OVERLAY")
+	self.InfoRight:SetPoint("RIGHT", self, 0, 15)
+	self.InfoRight:SetJustifyH("RIGHT")
+	self.InfoRight:SetShadowOffset(1, -1)
+	if unit=="player" then
+		self.InfoLeft:SetFont(font, fontsize, "OUTLINE")
+		self.InfoRight:SetFont(font, fontsize, "OUTLINE")
+		self:Tag(self.InfoLeft, "[curpp]")
+		self:Tag(self.InfoRight, "[dyscurhp(.)][perhp(%)]")
+	elseif unit=="target" then
+		self.InfoLeft:SetFont(font, fontsize, "OUTLINE")
+		self.InfoRight:SetFont(font, fontsize, "OUTLINE")
+		self:Tag(self.InfoLeft, "[difficulty][level][shortclassification][( )raidcolor][name(|r)]")
+		self:Tag(self.InfoRight, "[dyscurhp(.)][perhp(%)]")
 	else
-		self.Name:SetFont(font, smallfontsize, "OUTLINE")
+		self.InfoLeft:SetFont(font, smallfontsize, "OUTLINE")
+		self.InfoRight:SetFont(font, smallfontsize, "OUTLINE")
+		self:Tag(self.InfoLeft, "[raidcolor][name]")
+		self:Tag(self.InfoRight, "[perhp(%)]")
 	end
-	self.Name:SetShadowOffset(1, -1)
-	self.UNIT_NAME_UPDATE = updateName
-
-	--
-	-- level
-	--
-	self.Level = self.Health:CreateFontString(nil, "OVERLAY")
-	self.Level:SetPoint("LEFT", self.Health, 0, 9)
-	self.Level:SetJustifyH("LEFT")
-	self.Level:SetFont(font, fontsize, "OUTLINE")
-	self.Level:SetTextColor(1,1,1)
-	self.Level:SetShadowOffset(1, -1)
-	self.UNIT_LEVEL = updateLevel
 
 	-- ------------------------------------
 	-- player
@@ -374,13 +254,7 @@ local func = function(self, unit)
 		self:SetWidth(250)
 		self:SetHeight(27)
 		self.Health:SetHeight(15.5)
-		self.Name:Hide()
-		self.Health.value:SetPoint("RIGHT", 0, 9)
 		self.Power:SetHeight(10)
-		self.Power.value:Show()
-		self.Power.value:SetPoint("LEFT", self.Health, 0, 9)
-		self.Power.value:SetJustifyH"LEFT"
-		self.Level:Hide()
 
 		if(playerClass=="DRUID") then
 			-- bar
@@ -471,8 +345,6 @@ local func = function(self, unit)
 		self:SetWidth(120)
 		self:SetHeight(18)
 		self.Health:SetHeight(18)
-		self.Health.value:Hide()
-		self.Level:Hide()
 
 		if playerClass=="HUNTER" then
 			self.Health.colorReaction = false
@@ -495,11 +367,6 @@ local func = function(self, unit)
 		self:SetHeight(27)
 		self.Health:SetHeight(15.5)
 		self.Power:SetHeight(10)
-		self.Power.value:Hide()
-		self.Health.value:SetPoint("RIGHT", 0, 9)
-		self.Name:SetPoint("LEFT", self.Level, "RIGHT", 0, 0)
-		self.Name:SetHeight(20)
-		self.Name:SetWidth(150)
 
 		self.Health.colorClass = false
 
@@ -560,10 +427,6 @@ local func = function(self, unit)
 		self:SetHeight(18)
 		self.Health:SetHeight(18)
 		self.Power:Hide()
-		self.Power.value:Hide()
-		self.Health.value:Hide()
-		self.Name:SetWidth(95)
-		self.Name:SetHeight(18)
 
 		--
 		-- raid target icons
@@ -670,9 +533,6 @@ local func = function(self, unit)
 		self:SetHeight(20)
 		self.Health:SetHeight(15)
 		self.Power:SetHeight(3)
-		self.Power.value:Hide()
-		self.Health.value:SetPoint("RIGHT", 0 , 9)
-		self.Name:SetPoint("LEFT", 0, 9)
 
 		--
 		-- debuffs
@@ -708,11 +568,6 @@ local func = function(self, unit)
 		self.Power:Hide()
 		self.Health:SetFrameLevel(2)
 		self.Power:SetFrameLevel(2)
-		self.Health.value:Hide()
-		self.Power.value:Hide()
-		self.Name:SetFont(font, 12, "OUTLINE")
-		self.Name:SetWidth(85)
-		self.Name:SetHeight(15)
 
 		--
 		-- oUF_DebuffHighlight support
