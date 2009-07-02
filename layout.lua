@@ -414,7 +414,8 @@ local func = function(self, unit)
 		self.Debuffs:SetPoint("TOPLEFT", self, "BOTTOMLEFT", -2, -6)
 		self.Debuffs.initialAnchor = "TOPLEFT"
 		self.Debuffs["growth-y"] = "DOWN"
-		self.Debuffs.filter = false
+		self.Debuffs.filter = "HARMFUL|PLAYER"
+		self.Debuffs.showDebuffType = true
 		self.Debuffs.num = 40
 		self.Debuffs.spacing = 2
 	end
