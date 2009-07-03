@@ -21,3 +21,4 @@ oUF_Banzai\oUF_Banzai.lua
 #oUF_IncomingHeals\oUF_IncomingHeals.lua
 
 layout.lua
+cleanse.lua
