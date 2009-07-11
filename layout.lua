@@ -102,7 +102,22 @@ end
 -- ------------------------------------------------------------------------
 -- power update
 -- ------------------------------------------------------------------------
-local updatePower = function(self, event, unit, bar, min, max)
+local function PreUpdatePower(self, event, unit)
+	if self.unit ~= 'player' then return end
+
+	local cur = UnitPower('player', SPELL_POWER_MANA)
+	local max = UnitPowerMax('player', SPELL_POWER_MANA)
+
+	self.DruidMana:SetMinMaxValues(0, max)
+	self.DruidMana:SetValue(cur)
+
+	self.DruidMana.Text:SetFormattedText('%d%%', math.floor(cur / max * 100))
+
+	local powertype = UnitPowerType('player')
+	self.DruidMana:SetAlpha((powertype ~= 0) and 1 or 0)
+end
+
+local PostUpdatePower = function(self, event, unit, bar, min, max)
 	if UnitIsPlayer(unit) and min ~=0 and (UnitIsDead(unit) or UnitIsGhost(unit)) then
 		bar:SetValue(0)
 	end
@@ -228,7 +243,7 @@ local func = function(self, unit)
 	self.Power.colorClass = true
 	self.Power.colorPower = true
 	self.Power.colorHappiness = false
-	self.PostUpdatePower = updatePower -- let the colors be
+	self.PostUpdatePower = PostUpdatePower
 
 	--
 	-- Info Line
@@ -277,6 +292,7 @@ local func = function(self, unit)
 		self.Threat = threat
 
 		if(playerClass=="DRUID") then
+			self.PreUpdatePower = PreUpdatePower -- For Druid mana
 			-- bar
 			self.DruidMana = CreateFrame('StatusBar', nil, self)
 			self.DruidMana:SetPoint('BOTTOM', self, 'TOP', 0, 14)
@@ -296,12 +312,11 @@ local func = function(self, unit)
 				}
 			self.DruidMana:SetBackdropColor(0,0,0,1)
 			-- text
-			self.DruidManaText = self.DruidMana:CreateFontString(nil, 'OVERLAY')
-			self.DruidManaText:SetPoint("CENTER", self.DruidMana, "CENTER", 0, 1)
-			self.DruidManaText:SetFont(font, 12, "OUTLINE")
-			self.DruidManaText:SetTextColor(1,1,1)
-			self.DruidManaText:SetShadowOffset(1, -1)
-			self.DruidMana.text = self.DruidManaText
+			self.DruidMana.Text = self.DruidMana:CreateFontString(nil, 'OVERLAY')
+			self.DruidMana.Text:SetPoint("CENTER", self.DruidMana, "CENTER", 0, 1)
+			self.DruidMana.Text:SetFont(font, 12, "OUTLINE")
+			self.DruidMana.Text:SetTextColor(1,1,1)
+			self.DruidMana.Text:SetShadowOffset(1, -1)
 		end
 
 		--
