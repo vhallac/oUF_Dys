@@ -44,6 +44,7 @@ local fontsize = 15
 local smallfontsize = 12
 local bartex = "Interface\\AddOns\\oUF_Dys\\textures\\statusbar"
 local bufftex = "Interface\\AddOns\\oUF_Dys\\textures\\border"
+local highlighttex = "Interface\\AddOns\\oUF_Dys\\textures\\statusbar"
 local playerClass = select(2, UnitClass("player"))
 
 -- castbar position
@@ -140,6 +141,16 @@ oUF.Tags["[dyscurhp]"] = function(u)
 		text = "|cff33EE44"..numberize(UnitHealth(u)) .."|r"
 	end
 	return text
+end
+
+local checkThreatSituation = function(self, event, unit, status)
+	if status == 3 then
+		self.Threat:SetAlpha(0.8)
+		self.Threat:Show()
+	else
+		self.Threat:SetAlpha(0)
+		self.Threat:Hide()
+	end
 end
 
 -- ------------------------------------------------------------------------
@@ -255,6 +266,15 @@ local func = function(self, unit)
 		self:SetHeight(27)
 		self.Health:SetHeight(15.5)
 		self.Power:SetHeight(10)
+		-- Check aggro, and update health color
+		self.OverrideUpdateThreat = checkThreatSituation
+		local threat = self.Health:CreateTexture(nil, "OVERLAY")
+		threat:SetAllPoints(self.Health)
+		threat:SetVertexColor(1, 0, 0, 0.6)
+		threat:SetBlendMode("BLEND")
+		threat:SetTexture(highlighttex)
+		threat:SetAlpha(0)
+		self.Threat = threat
 
 		if(playerClass=="DRUID") then
 			-- bar
