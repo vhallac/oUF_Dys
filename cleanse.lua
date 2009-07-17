@@ -1,5 +1,6 @@
 -- Pick up the global, which is controlled by X-oUF of the TOC file.
 local oUF = oUF_Dys
+local SM = LibStub("LibSharedMedia-3.0")
 local spacing_x = 3
 local spacing_y = -3
 local size_x = 27
@@ -29,6 +30,8 @@ local cleanseInfo = {
 }
 local playerCleanseInfo = cleanseInfo[playerClass]
 
+SM:Register("sound", "Explosion", [[Sound\Doodad\Hellfire_Raid_FX_Explosion05.wav]])
+
 local function HasDebuffType(unit, t)
 	for i=1,40 do
 		local name, _, _, _, debuffType = UnitDebuff(unit, i)
@@ -42,7 +45,11 @@ local function HasDebuffType(unit, t)
 	end
 end
 
+local lastPlayed = GetTime()
+local warnSoundDelta = 15 -- Play the sound 15 secs after the previous one
+
 local Update = function(self, event, unit)
+	local playSound
 	if unit == self.unit then
 --		DEFAULT_CHAT_FRAME:AddMessage("In AuraTranasparency:Update() " .. (self:GetName() or "nil") .. " " .. (unit or "nil") .. ", " .. (self.unit or "nil") .. ", " .. (self.__unit or "nil"))
 		local hasCurable, inRange = HasDebuffType(unit, self.AuraTransparency)
@@ -50,6 +57,7 @@ local Update = function(self, event, unit)
 			if inRange then
 				self:SetBackdropColor(1, 0, 0, 1)
 				self:SetBackdropBorderColor(1, 0, 0, 1)
+				playSound = true
 			else
 				self:SetBackdropColor(0.4, 0, 0, 0.6)
 				self:SetBackdropBorderColor(0.4, 0, 0, 0.6)
@@ -57,6 +65,11 @@ local Update = function(self, event, unit)
 		else
 			self:SetBackdropColor(0, 0, 0, .1)
 			self:SetBackdropBorderColor(0, 0, 0, .1)
+		end
+		local curTime = GetTime()
+		if playSound and  curTime - lastPlayed > warnSoundDelta then
+			lastPlayed = curTime
+			PlaySoundFile(SM:Fetch("sound", "Explosion"))
 		end
 	end
 end
