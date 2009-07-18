@@ -158,14 +158,17 @@ oUF.Tags["[dyscurhp]"] = function(u)
 	return text
 end
 
+local colorHealthRed = function(self, event, unit, bar, min, max)
+	bar:SetStatusBarColor(1, 0, 0)
+end
+
 local checkThreatSituation = function(self, event, unit, status)
 	if status == 3 then
-		self.Threat:SetAlpha(0.8)
-		self.Threat:Show()
+		self.OverrideUpdateHealth = colorHealthRed
 	else
-		self.Threat:SetAlpha(0)
-		self.Threat:Hide()
+		self.OverrideUpdateHealth = nil
 	end
+	self:UpdateElement("Health")
 end
 
 -- ------------------------------------------------------------------------
@@ -283,12 +286,10 @@ local func = function(self, unit)
 		self.Power:SetHeight(10)
 		-- Check aggro, and update health color
 		self.OverrideUpdateThreat = checkThreatSituation
+		-- A texture or a frame is needed to activate threat module.
+		-- We won't be using it to display anything, though.
+		-- checkThreatSituation updates health bar color
 		local threat = self.Health:CreateTexture(nil, "OVERLAY")
-		threat:SetAllPoints(self.Health)
-		threat:SetVertexColor(1, 0, 0, 0.6)
-		threat:SetBlendMode("BLEND")
-		threat:SetTexture(highlighttex)
-		threat:SetAlpha(0)
 		self.Threat = threat
 
 		if(playerClass=="DRUID") then
