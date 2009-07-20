@@ -324,9 +324,9 @@ local func = function(self, unit)
 		-- leader icon
 		--
 		self.Leader = self.Health:CreateTexture(nil, "OVERLAY")
-		self.Leader:SetHeight(12)
-		self.Leader:SetWidth(12)
-		self.Leader:SetPoint("BOTTOMRIGHT", self, -2, 4)
+		self.Leader:SetHeight(16)
+		self.Leader:SetWidth(16)
+		self.Leader:SetPoint("CENTER", self, "TOP", 0, 4)
 		self.Leader:SetTexture"Interface\\GroupFrame\\UI-Group-LeaderIcon"
 
 		--
@@ -372,6 +372,23 @@ local func = function(self, unit)
 		self.Debuffs.filter = false
 		self.Debuffs.num = 40
 		self.Debuffs.spacing = 2
+
+		--
+		-- Resting
+		--
+		self.Resting = self.Health:CreateTexture(nil, "OVERLAY")
+		self.Resting:SetHeight(32)
+		self.Resting:SetWidth(32)
+		self.Resting:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 36, -30)
+
+		--
+		-- PvP
+		--
+		self.PvP = self.Health:CreateTexture(nil, "OVERLAY")
+		self.PvP:SetHeight(48)
+		self.PvP:SetWidth(48)
+		self.PvP:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 4, -32)
+
 	end
 
 	-- ------------------------------------
