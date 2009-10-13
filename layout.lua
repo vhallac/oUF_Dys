@@ -688,6 +688,8 @@ local mouseovertarget = oUF:Spawn("mouseovertarget", "oUF_MOT")
 mouseovertarget:SetPoint("BOTTOMLEFT", focus, 0, -30)
 ]]--
 
+
+--[[
 --
 -- party
 --
@@ -696,7 +698,7 @@ party:SetManyAttributes("showParty", true, "yOffset", -15)
 party:SetPoint("TOPLEFT", 35, -320)
 party:Show()
 party:SetAttribute("showRaid", false)
-
+]]--
 --[[
 --
 -- raid
@@ -718,6 +720,7 @@ for i = 1, NUM_RAID_GROUPS do
 	RaidGroup:Show()
 end
 ]]--
+--[[
 --
 -- party toggle in raid
 --
@@ -738,3 +741,4 @@ partyToggle:SetScript('OnEvent', function(self)
 		end
 	end
 end)
+]]--
