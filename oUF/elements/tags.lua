@@ -24,36 +24,133 @@ end
 
 local tags
 tags = {
-	["[class]"]       = function(u) return UnitClass(u) end,
-	["[creature]"]    = function(u) return UnitCreatureFamily(u) or UnitCreatureType(u) end,
-	["[curhp]"]       = UnitHealth,
-	["[curpp]"]       = UnitPower,
-	["[dead]"]        = function(u) return UnitIsDead(u) and "Dead" or UnitIsGhost(u) and "Ghost" end,
-	["[difficulty]"]  = function(u) if UnitCanAttack("player", u) then local l = UnitLevel(u); return Hex(GetDifficultyColor((l > 0) and l or 99)) end end,
-	["[faction]"]     = function(u) return UnitFactionGroup(u) end,
-	["[leader]"]      = function(u) return UnitIsPartyLeader(u) and "(L)" end,
-	["[leaderlong]"]  = function(u) return UnitIsPartyLeader(u) and "(Leader)" end,
-	["[level]"]       = function(u) local l = UnitLevel(u) return (l > 0) and l or "??" end,
-	["[maxhp]"]       = UnitHealthMax,
-	["[maxpp]"]       = UnitPowerMax,
-	["[missinghp]"]   = function(u) return UnitHealthMax(u) - UnitHealth(u) end,
-	["[missingpp]"]   = function(u) return UnitPowerMax(u) - UnitPower(u) end,
-	["[name]"]        = function(u, r) return UnitName(r or u) end,
-	["[offline]"]     = function(u) return  (not UnitIsConnected(u) and "Offline") end,
-	["[perhp]"]       = function(u) local m = UnitHealthMax(u); return m == 0 and 0 or math.floor(UnitHealth(u)/m*100+0.5) end,
-	["[perpp]"]       = function(u) local m = UnitPowerMax(u); return m == 0 and 0 or math.floor(UnitPower(u)/m*100+0.5) end,
-	["[plus]"]        = function(u) local c = UnitClassification(u); return (c == "elite" or c == "rareelite") and "+" end,
-	["[pvp]"]         = function(u) return UnitIsPVP(u) and "PvP" end,
-	["[race]"]        = function(u) return UnitRace(u) end,
-	["[raidcolor]"]   = function(u) local _, x = UnitClass(u); return x and Hex(classColors[x]) end,
-	["[rare]"]        = function(u) local c = UnitClassification(u); return (c == "rare" or c == "rareelite") and "Rare" end,
-	["[resting]"]     = function(u) return u == "player" and IsResting() and "zzz" end,
-	["[sex]"]         = function(u) local s = UnitSex(u) return s == 2 and "Male" or s == 3 and "Female" end,
-	["[smartclass]"]  = function(u) return UnitIsPlayer(u) and tags["[class]"](u) or tags["[creature]"](u) end,
-	["[status]"]      = function(u) return UnitIsDead(u) and "Dead" or UnitIsGhost(u) and "Ghost" or not UnitIsConnected(u) and "Offline" or tags["[resting]"](u) end,
-	["[threat]"]      = function(u) local s = UnitThreatSituation(u) return s == 1 and "++" or s == 2 and "--" or s == 3 and "Aggro" end,
-	["[threatcolor]"] = function(u) return Hex(GetThreatStatusColor(UnitThreatSituation(u))) end,
-	["[cpoints]"]     = function(u) local cp = GetComboPoints(u, 'target') return (cp > 0) and cp end,
+
+	["[curhp]"] = UnitHealth,
+	["[curpp]"] = UnitPower,
+	["[maxhp]"] = UnitHealthMax,
+	["[maxpp]"] = UnitPowerMax,
+
+	["[class]"] = function(u)
+		return UnitClass(u)
+	end,
+
+	["[creature]"] = function(u)
+		return UnitCreatureFamily(u) or UnitCreatureType(u)
+	end,
+
+	["[dead]"] = function(u)
+		return UnitIsDead(u) and "Dead" or UnitIsGhost(u) and "Ghost"
+	end,
+
+	["[difficulty]"]  = function(u)
+		if UnitCanAttack("player", u) then
+			local l = UnitLevel(u)
+			return Hex(GetQuestDifficultyColor((l > 0) and l or 99))
+		end
+	end,
+
+	["[faction]"] = function(u)
+		return UnitFactionGroup(u)
+	end,
+
+	["[leader]"] = function(u)
+		return UnitIsPartyLeader(u) and "(L)"
+	end,
+
+	["[leaderlong]"]  = function(u)
+		return UnitIsPartyLeader(u) and "(Leader)"
+	end,
+
+	["[level]"] = function(u)
+		local l = UnitLevel(u)
+		return (l > 0) and l or "??"
+	end,
+
+	["[missinghp]"] = function(u)
+		local current = UnitHealthMax(u) - UnitHealth(u)
+		if(current > 0) then
+			return current
+		end
+	end,
+
+	["[missingpp]"] = function(u)
+		local current = UnitPowerMax(u) - UnitPower(u)
+		if(current > 0) then
+			return current
+		end
+	end,
+
+	["[name]"] = function(u, r)
+		return UnitName(r or u)
+	end,
+
+	["[offline]"] = function(u)
+		return  (not UnitIsConnected(u) and "Offline")
+	end,
+
+	["[perhp]"] = function(u)
+		local m = UnitHealthMax(u)
+		return m == 0 and 0 or math.floor(UnitHealth(u)/m*100+0.5)
+	end,
+
+	["[perpp]"] = function(u)
+		local m = UnitPowerMax(u)
+		return m == 0 and 0 or math.floor(UnitPower(u)/m*100+0.5)
+	end,
+
+	["[plus]"] = function(u)
+		local c = UnitClassification(u)
+		return (c == "elite" or c == "rareelite") and "+"
+	end,
+
+	["[pvp]"] = function(u)
+		return UnitIsPVP(u) and "PvP"
+	end,
+
+	["[race]"] = function(u)
+		return UnitRace(u)
+	end,
+
+	["[raidcolor]"]   = function(u)
+		local _, x = UnitClass(u)
+		return x and Hex(classColors[x])
+	end,
+
+	["[rare]"] = function(u)
+		local c = UnitClassification(u)
+		return (c == "rare" or c == "rareelite") and "Rare"
+	end,
+
+	["[resting]"] = function(u)
+		return u == "player" and IsResting() and "zzz"
+	end,
+
+	["[sex]"] = function(u)
+		local s = UnitSex(u)
+		return s == 2 and "Male" or s == 3 and "Female"
+	end,
+
+	["[smartclass]"] = function(u)
+		return UnitIsPlayer(u) and tags["[class]"](u) or tags["[creature]"](u)
+	end,
+
+	["[status]"] = function(u)
+		return UnitIsDead(u) and "Dead" or UnitIsGhost(u) and "Ghost" or not UnitIsConnected(u) and "Offline" or tags["[resting]"](u)
+	end,
+
+	["[threat]"] = function(u)
+		local s = UnitThreatSituation(u)
+		return s == 1 and "++" or s == 2 and "--" or s == 3 and "Aggro"
+	end,
+
+	["[threatcolor]"] = function(u)
+		return Hex(GetThreatStatusColor(UnitThreatSituation(u)))
+	end,
+
+	["[cpoints]"] = function(u)
+		local cp = GetComboPoints(u, 'target')
+		return (cp > 0) and cp
+	end,
 
 	['[smartlevel]'] = function(u)
 		local c = UnitClassification(u)
@@ -80,7 +177,7 @@ tags = {
 		return c == "rare" and "R" or c == "eliterare" and "R+" or c == "elite" and "+" or c == "worldboss" and "B"
 	end,
 
-	["group"] = function(unit)
+	["[group]"] = function(unit)
 		local name, server = UnitName(unit)
 		if(server and server ~= "") then
 			name = string.format("%s-%s", name, server)
@@ -92,6 +189,10 @@ tags = {
 				return group
 			end
 		end
+	end,
+
+	["[defict:name]"] = function(u)
+		return tags['[missinghp]'](u) or tags['[name]'](u)
 	end,
 }
 local tagEvents = {
@@ -185,7 +286,7 @@ end
 local RegisterEvents = function(fontstr, tagstr)
 	-- Forcefully strip away any parentheses and the characters in them.
 	tagstr = tagstr:gsub('%b()', '')
-	for tag in tagstr:gmatch'[%[]%w+[%]]' do
+	for tag in tagstr:gmatch'[%[].-[%]]' do
 		local tagevents = tagEvents[tag]
 		if(tagevents) then
 			for event in tagevents:gmatch'%S+' do

@@ -133,6 +133,21 @@ local OnEvent = function(self, event, ...)
 	return self[event](self, event, ...)
 end
 
+local iterateChildren = function(...)
+	for l = 1, select("#", ...) do
+		local obj = select(l, ...)
+
+		if(type(obj) == 'table' and obj.isChild) then
+			local unit = SecureButton_GetModifiedUnit(obj)
+			local subUnit = conv[unit] or unit
+			units[subUnit] = obj
+			obj.unit = subUnit
+			obj:PLAYER_ENTERING_WORLD()
+		end
+	end
+end
+
+
 local OnAttributeChanged = function(self, name, value)
 	if(name == "unit" and value) then
 		units[value] = self
@@ -141,11 +156,7 @@ local OnAttributeChanged = function(self, name, value)
 			return
 		else
 			if(self.hasChildren) then
-				for _, object in next, objects do
-					local unit = SecureButton_GetModifiedUnit(object)
-					object.unit = conv[unit] or unit
-					object:PLAYER_ENTERING_WORLD()
-				end
+				iterateChildren(self:GetChildren())
 			end
 
 			self.unit = value
@@ -259,16 +270,27 @@ local initObject = function(unit, style, ...)
 			if(unit) then object:SetScale(scale) end
 		end
 
-		if(suffix == 'target') then
-			enableTargetUpdate(object)
+		local parent = (i == 1) and object:GetParent()
+		local showPlayer
+		if(parent) then
+			showPlayer = parent:GetAttribute'showPlayer' or parent:GetAttribute'showSolo'
 		end
 
-		if(num > 1 and i == 1) then
-			object.hasChildren = true
+		if(num > 1) then
+			if(i == 1) then
+				object.hasChildren = true
+			else
+				object.isChild = true
+			end
+		end
+
+		if(suffix and suffix:match'target' and (i ~= 1 and not showPlayer)) then
+			enableTargetUpdate(object)
+		else
+			object:SetScript("OnEvent", OnEvent)
 		end
 
 		object:SetAttribute("*type1", "target")
-		object:SetScript("OnEvent", OnEvent)
 		object:SetScript("OnAttributeChanged", OnAttributeChanged)
 		object:SetScript("OnShow", object.PLAYER_ENTERING_WORLD)
 
