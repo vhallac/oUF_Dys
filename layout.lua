@@ -362,16 +362,16 @@ local func = function(self, unit)
 		-- debuffs
 		--
 		self.Debuffs = CreateFrame("Frame", nil, self)
-		self.Debuffs.size = 30
+		self.Debuffs.size = 44
+		self.Debuffs.spacing = 4
 		self.Debuffs:SetHeight(self.Debuffs.size)
-		self.Debuffs:SetWidth(self.Debuffs.size * 9)
-		self.Debuffs:SetPoint("TOPRIGHT", self.Health, "TOPLEFT", -3, 2)
-		self.Debuffs.initialAnchor = "TOPRIGHT"
-		self.Debuffs["growth-x"] = "LEFT"
+		self.Debuffs:SetWidth((self.Debuffs.size + self.Debuffs.spacing) * 6 - self.Debuffs.spacing)
+		self.Debuffs:SetPoint("CENTER", UIParent, "CENTER", 0, -320)
+		self.Debuffs.initialAnchor = "TOPLEFT"
+		self.Debuffs["growth-x"] = "RIGHT"
 		self.Debuffs["growth-y"] = "DOWN"
 		self.Debuffs.filter = false
 		self.Debuffs.num = 40
-		self.Debuffs.spacing = 2
 
 		--
 		-- Resting
