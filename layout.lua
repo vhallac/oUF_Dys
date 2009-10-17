@@ -525,21 +525,14 @@ local func = function(self, unit)
 			self.Castbar:SetPoint('CENTER', UIParent, 'CENTER', playerCastBar_x, playerCastBar_y)
 
 			--
-			-- GCD spark
+			-- GCD
 			--
-			self.GCD = CreateFrame("Frame", nil, self)
+			self.GCD = CreateFrame("StatusBar", nil, self)
 			self.GCD:SetPoint('TOPLEFT', self.Castbar, 'BOTTOMLEFT')
 			self.GCD:SetPoint('TOPRIGHT', self.Castbar, 'BOTTOMRIGHT')
 			self.GCD:SetHeight(4)
-
-			self.GCD.Spark = self.GCD:CreateTexture(nil, "OVERLAY")
-			self.GCD.Spark:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
-			self.GCD.Spark:SetBlendMode("ADD")
-			self.GCD.Spark:SetHeight(10)
-			self.GCD.Spark:SetWidth(10)
-			self.GCD.Spark:SetPoint('BOTTOMLEFT', self.Title, 'BOTTOMLEFT', -5, -5)
-
-			self.GCD.ReferenceSpellName = "Ice Lance"
+			self.GCD:SetStatusBarTexture(bartex)
+			self.GCD:SetStatusBarColor(0.55, 0.57, 0.61)
 		else
 			self.Castbar:SetStatusBarColor(0.80, 0.01, 0)
 			self.Castbar:SetHeight(24)

@@ -1,9 +1,8 @@
-## Interface: 30000
-## Title: oUF GCD
-## Notes: A global cooldown timer for oUF
-## Author: Exactly
-## Version: 1.0
-## X-Category: UnitFrame
+## Interface: 30200
+## Title: oUF_GCD
+## Notes: Hungtar's oUF Global Cooldown Bar
+## Author: Hungtar
+## Version: 0.0.2
 ## Dependencies: oUF
 
 oUF_GCD.lua
