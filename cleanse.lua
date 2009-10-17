@@ -1,3 +1,4 @@
+
 -- Pick up the global, which is controlled by X-oUF of the TOC file.
 local oUF = oUF_Dys
 local SM = LibStub("LibSharedMedia-3.0")
@@ -30,7 +31,7 @@ local cleanseInfo = {
 }
 local playerCleanseInfo = cleanseInfo[playerClass]
 
-SM:Register("sound", "Explosion", [[Sound\Doodad\Hellfire_Raid_FX_Explosion05.wav]])
+SM:Register("sound", "beam11", "Interface\\AddOns\\oUF_Dys\\sounds\\beam11.wav")
 
 local function HasDebuffType(unit, t)
 	for i=1,40 do
@@ -49,9 +50,8 @@ local lastPlayed = GetTime()
 local warnSoundDelta = 15 -- Play the sound 15 secs after the previous one
 
 local Update = function(self, event, unit)
-	local playSound
+	local playSound = false
 	if unit == self.unit then
---		DEFAULT_CHAT_FRAME:AddMessage("In AuraTranasparency:Update() " .. (self:GetName() or "nil") .. " " .. (unit or "nil") .. ", " .. (self.unit or "nil") .. ", " .. (self.__unit or "nil"))
 		local hasCurable, inRange = HasDebuffType(unit, self.AuraTransparency)
 		if hasCurable then
 			if inRange then
@@ -69,7 +69,7 @@ local Update = function(self, event, unit)
 		local curTime = GetTime()
 		if playSound and  curTime - lastPlayed > warnSoundDelta then
 			lastPlayed = curTime
-			PlaySoundFile(SM:Fetch("sound", "Explosion"))
+			PlaySoundFile(SM:Fetch("sound", "beam11"))
 		end
 	end
 end
@@ -110,7 +110,6 @@ local func = function(self, unit)
 	self:SetAttribute('initial-width', size_y)
 
 	-- And adjust the initial value of the transparency
-	DEFAULT_CHAT_FRAME:AddMessage("Creating... " .. (unit or "nil"))
 	self.AuraTransparency = playerCleanseInfo and playerCleanseInfo.canCure
 
 	return self
@@ -122,24 +121,29 @@ oUF:SetActiveStyle("Dys - Cleanse")
 --
 -- raid
 --
-oUF_Dys.Cleanse = {}
-for i = 1, NUM_RAID_GROUPS do
-	local raidGroup = oUF:Spawn("header", "oUF_Cleanse" .. i)
-	raidGroup:SetManyAttributes('groupFilter', tostring(i),
-	                            'showRaid', true,
-	                            'showParty', true,
-	                            'showPlayer', true,
-	                            'point', "LEFT",
-	                            'xoffset', spacing_x,
-	                            'yOffset', 0)
-
-	table.insert(oUF_Dys.Cleanse, raidGroup)
-	if i == 1 then
-		raidGroup:SetPoint("TOPRIGHT", UIParent, "CENTER", -spacing_x/2, -290)
-	elseif i%2 == 0 then
-		raidGroup:SetPoint("TOPLEFT", oUF_Dys.Cleanse[i-1], "TOPRIGHT", spacing_x, 0)
-	else
-		raidGroup:SetPoint("TOPLEFT", oUF_Dys.Cleanse[i-2], "BOTTOMLEFT", 0, spacing_y)
+if playerCleanseInfo then
+	oUF_Dys.Cleanse = {}
+	for i = 1, NUM_RAID_GROUPS do
+		local raidGroup = oUF:Spawn("header", "oUF_Cleanse" .. i)
+		if i == 1 then
+			raidGroup:SetManyAttributes('showParty', true,
+										'showPlayer', true,
+										'showSolo', true)
+		end
+		raidGroup:SetManyAttributes('groupFilter', tostring(i),
+									'showRaid', true,
+									'point', "LEFT",
+									'xoffset', spacing_x,
+									'yOffset', 0)
+		table.insert(oUF_Dys.Cleanse, raidGroup)
+		if i == 1 then
+			raidGroup:SetPoint("TOPRIGHT", UIParent, "CENTER", -spacing_x/2, -290)
+		elseif i%2 == 0 then
+			raidGroup:SetPoint("TOPLEFT", oUF_Dys.Cleanse[i-1], "TOPRIGHT", spacing_x, 0)
+		else
+			raidGroup:SetPoint("TOPLEFT", oUF_Dys.Cleanse[i-2], "BOTTOMLEFT", 0, spacing_y)
+		end
+		raidGroup:Show()
 	end
-	raidGroup:Show()
 end
+
