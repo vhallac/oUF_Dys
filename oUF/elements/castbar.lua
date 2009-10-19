@@ -46,7 +46,7 @@ local UNIT_SPELLCAST_START = function(self, event, unit, spell, spellrank)
 	castbar.interrupt = interrupt
 
 	castbar:SetMinMaxValues(0, max)
-	castbar:SetValue(0)
+	castbar:SetValue(castbar.duration)
 
 	if(castbar.Text) then castbar.Text:SetText(text) end
 	if(castbar.Icon) then castbar.Icon:SetTexture(texture) end
@@ -58,6 +58,12 @@ local UNIT_SPELLCAST_START = function(self, event, unit, spell, spellrank)
 		sf:SetPoint'RIGHT'
 		sf:SetPoint'TOP'
 		sf:SetPoint'BOTTOM'
+		local width = castbar:GetWidth()
+		local _, _, ms = GetNetStats()
+		-- MADNESS!
+		local safeZonePercent = (width / castbar.max) * (ms / 1e5)
+		if(safeZonePercent > 1) then safeZonePercent = 1 end
+		sf:SetWidth(width * safeZonePercent)
 	end
 
 	if(self.PostCastStart) then self:PostCastStart(event, unit, name, rank, text, castid, interrupt) end
@@ -217,15 +223,6 @@ local onUpdate = function(self, elapsed)
 			if(parent.PostCastStop) then parent:PostCastStop('OnUpdate', parent.unit) end
 
 			return
-		end
-
-		if self.SafeZone then
-			local width = self:GetWidth()
-			local _, _, ms = GetNetStats()
-			-- MADNESS!
-			local safeZonePercent = (width / self.max) * (ms / 1e5)
-			if(safeZonePercent > 1) then safeZonePercent = 1 end
-			self.SafeZone:SetWidth(width * safeZonePercent)
 		end
 
 		if self.Time then
