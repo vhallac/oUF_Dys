@@ -19,5 +19,6 @@ oUF_GCD\oUF_GCD.lua
 
 #oUF_IncomingHeals\oUF_IncomingHeals.lua
 
+textaura.lua
 layout.lua
 cleanse.lua

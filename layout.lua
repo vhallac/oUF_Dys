@@ -361,17 +361,20 @@ local func = function(self, unit)
 		--
 		-- debuffs
 		--
-		self.Debuffs = CreateFrame("Frame", nil, self)
-		self.Debuffs.size = 44
-		self.Debuffs.spacing = 4
-		self.Debuffs:SetHeight(self.Debuffs.size)
-		self.Debuffs:SetWidth((self.Debuffs.size + self.Debuffs.spacing) * 6 - self.Debuffs.spacing)
-		self.Debuffs:SetPoint("CENTER", UIParent, "CENTER", 0, -320)
-		self.Debuffs.initialAnchor = "TOPLEFT"
-		self.Debuffs["growth-x"] = "RIGHT"
-		self.Debuffs["growth-y"] = "DOWN"
-		self.Debuffs.filter = false
-		self.Debuffs.num = 40
+		self.TxtDebuffs = CreateFrame("Frame", nil, self)
+		self.TxtDebuffs.height = 33
+		self.TxtDebuffs.width = 380
+		self.TxtDebuffs.spacing = 4
+		self.TxtDebuffs.num = 10
+		self.TxtDebuffs.fontSize = 20
+		self.TxtDebuffs.labelFont = font
+		self.TxtDebuffs.initialAnchor = "TOP"
+		self.TxtDebuffs:SetHeight((self.TxtDebuffs.height + self.TxtDebuffs.spacing)* self.TxtDebuffs.num - self.TxtDebuffs.spacing)
+		self.TxtDebuffs:SetWidth(self.TxtDebuffs.width)
+		self.TxtDebuffs:SetPoint("TOP", UIParent, "TOP", 0, -30)
+		self.TxtDebuffs["growth-y"] = "DOWN"
+		self.TxtDebuffs.filter = false
+		self.TxtDebuffs.bgTexture = bartex
 
 		--
 		-- Resting
