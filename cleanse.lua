@@ -9,40 +9,28 @@ local size_y = 27
 local playerClass = select(2, UnitClass("player"))
 local cleanseInfo = {
 	MAGE = {
-		canCure = { "Curse" },
-		spellId = {
-			475 -- Remove Curse (Mage)
-		},
+		["Curse"] = 475 -- Remove Curse (Mage)
 	},
 	DRUID = {
-		canCure = { "Curse", "Poison" },
-		spellId = {
-			2782, -- Remove Curse (Druid)
-			2893, -- Abolish Poison
-		},
+		["Curse"] = 2782, -- Remove Curse (Druid),
+		["Poison"] = 2893, -- Abolish Poison
 	},
 	PRIEST = {
-		canCure = { "Disease", "Magic" },
-		spellId = {
-			552, -- Abolish Disease
-			988, -- Dispel Magic
-		}
-	}
+		["Disease"] = 552, -- Abolish Disease,
+		["Magic"] = 988, -- Dispel Magic
+	},
+	-- TODO: Add other classes. Paladins, shamans...
 }
 local playerCleanseInfo = cleanseInfo[playerClass]
 
 SM:Register("sound", "beam11", "Interface\\AddOns\\oUF_Dys\\sounds\\beam11.wav")
 
-local function HasDebuffType(unit, t)
+local function HasDebuffType(unit, debuffSpells)
 	for i=1,40 do
-		local name, _, _, _, debuffType = UnitDebuff(unit, i)
-		if not name then return end
-		for i, val in ipairs(t) do
-			if debuffType == val then
-				local inRange = IsSpellInRange(playerCleanseInfo.spellId[i], "spell", unit)
-				return true, inRange
-			end
-		end
+		local name, _, _, _, debuffType = UnitDebuff(unit, i, 1)
+		if not name or not debuffType or not debuffSpells[debuffType] then return end
+		local inRange = IsSpellInRange(debuffSpells[debuffType], "spell", unit)
+		return true, inRange
 	end
 end
 
@@ -110,7 +98,7 @@ local func = function(self, unit)
 	self:SetAttribute('initial-width', size_y)
 
 	-- And adjust the initial value of the transparency
-	self.AuraTransparency = playerCleanseInfo and playerCleanseInfo.canCure
+	self.AuraTransparency = playerCleanseInfo
 
 	return self
 end
