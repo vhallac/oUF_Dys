@@ -82,7 +82,7 @@ local OnUpdateGCD = function(self)
 	if perc > 1 then
 		self:Hide()
 	else
-		self:SetValue(perc)
+		self:SetValue(1-perc)
 	end
 end
 
