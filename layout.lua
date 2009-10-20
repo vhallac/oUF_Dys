@@ -272,17 +272,20 @@ local func = function(self, unit)
 	self.InfoRight:SetShadowOffset(1, -1)
 	if unit=="player" then
 		self.InfoLeft:SetFont(font, fontsize, "OUTLINE")
+		self.InfoLeft:SetHeight(fontsize + 2)
 		self.InfoRight:SetFont(font, fontsize, "OUTLINE")
 		self:Tag(self.InfoLeft, "[curpp]")
 		self:Tag(self.InfoRight, "[dyscurhp(.)][perhp(%)]")
 	elseif unit=="target" then
 		self.InfoLeft:SetFont(font, fontsize, "OUTLINE")
 		self.InfoRight:SetFont(font, fontsize, "OUTLINE")
+		self.InfoLeft:SetHeight(fontsize + 2)
 		self:Tag(self.InfoLeft, "[difficulty][level][shortclassification][( )raidcolor][name(|r)]")
 		self:Tag(self.InfoRight, "[dyscurhp(.)][perhp(%)]")
 	else
 		self.InfoLeft:SetFont(font, smallfontsize, "OUTLINE")
 		self.InfoRight:SetFont(font, smallfontsize, "OUTLINE")
+		self.InfoLeft:SetHeight(smallfontsize + 2)
 		self:Tag(self.InfoLeft, "[raidcolor][name]")
 		self:Tag(self.InfoRight, "[perhp(%)]")
 	end
@@ -585,6 +588,8 @@ local func = function(self, unit)
 		self.Castbar.Time:SetTextColor(1, 1, 1)
 		self.Castbar.Time:SetJustifyH('RIGHT')
 	end
+	-- Clip name if needed
+	self.InfoLeft:SetWidth(self:GetWidth()*0.75)
 
 
 	-- ------------------------------------
