@@ -172,6 +172,17 @@ local checkThreatSituation = function(self, event, unit, status)
 end
 
 -- ------------------------------------------------------------------------
+-- Custom filter for Auras
+-- ------------------------------------------------------------------------
+local auraFilter = function(auras, unit, aura, name, rank, texture, count, dtype, duration, timeLeft, caster)
+	if name ~= "Tricked or Treated" then
+		return true
+	end
+
+	return false
+end
+
+-- ------------------------------------------------------------------------
 -- the layout starts here
 -- ------------------------------------------------------------------------
 local func = function(self, unit)
@@ -375,6 +386,7 @@ local func = function(self, unit)
 		self.TxtDebuffs["growth-y"] = "DOWN"
 		self.TxtDebuffs.filter = false
 		self.TxtDebuffs.bgTexture = bartex
+		self.TxtDebuffs.CustomAuraFilter = auraFilter
 
 		--
 		-- Resting
