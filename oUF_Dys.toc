@@ -13,12 +13,6 @@ oUF\ouf.xml
 oUF_PowerSpark\oUF_PowerSpark.lua
 oUF_GCD\oUF_GCD.lua
 
-#oUF_IncomingHeals\LibHealComm-3.0\LibStub\LibStub.lua
-#oUF_IncomingHeals\LibHealComm-3.0\CallbackHandler-1.0\CallbackHandler-1.0.lua
-#oUF_IncomingHeals\LibHealComm-3.0\lib.xml
-
-#oUF_IncomingHeals\oUF_IncomingHeals.lua
-
 textaura.lua
 layout.lua
 cleanse.lua
