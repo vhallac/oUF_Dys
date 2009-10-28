@@ -40,8 +40,6 @@ local oUF = oUF_Dys
 -- ------------------------------------------------------------------------
 local font = "Interface\\AddOns\\oUF_Dys\\fonts\\font.ttf"
 local upperfont = "Interface\\AddOns\\oUF_Dys\\fonts\\upperfont.ttf"
-local fontsize = 15
-local smallfontsize = 12
 local bartex = "Interface\\AddOns\\oUF_Dys\\textures\\statusbar"
 local bufftex = "Interface\\AddOns\\oUF_Dys\\textures\\border"
 local highlighttex = "Interface\\AddOns\\oUF_Dys\\textures\\statusbar"
@@ -185,7 +183,7 @@ end
 -- ------------------------------------------------------------------------
 -- the layout starts here
 -- ------------------------------------------------------------------------
-local func = function(self, unit)
+local func = function(settings, self, unit)
 	self.menu = menu -- Enable the menus
 
 	self:SetScript("OnEnter", UnitFrame_OnEnter)
@@ -207,7 +205,7 @@ local func = function(self, unit)
 	-- healthbar
 	--
 	self.Health = CreateFrame"StatusBar"
-	self.Health:SetHeight(19) -- Custom height
+	self.Health:SetHeight(settings["healthbar-height"])
 	self.Health:SetStatusBarTexture(bartex)
 	self.Health:SetParent(self)
 	self.Health:SetPoint"TOP"
@@ -233,59 +231,57 @@ local func = function(self, unit)
 	--
 	-- powerbar
 	--
-	self.Power = CreateFrame"StatusBar"
-	self.Power:SetHeight(3)
-	self.Power:SetStatusBarTexture(bartex)
-	self.Power:SetParent(self)
-	self.Power:SetPoint"LEFT"
-	self.Power:SetPoint"RIGHT"
-	self.Power:SetPoint("TOP", self.Health, "BOTTOM", 0, -1.45) -- Little offset to make it pretty
+	if settings["have-powerbar"] then
+		self.Power = CreateFrame"StatusBar"
+		self.Power:SetHeight(settings["powerbar-height"])
+		self.Power:SetStatusBarTexture(bartex)
+		self.Power:SetParent(self)
+		self.Power:SetPoint"LEFT"
+		self.Power:SetPoint"RIGHT"
+		self.Power:SetPoint("TOP", self.Health, "BOTTOM", 0, -1.45) -- Little offset to make it pretty
 
-	--
-	-- powerbar background
-	--
-	self.Power.bg = self.Power:CreateTexture(nil, "BORDER")
-	self.Power.bg:SetAllPoints(self.Power)
-	self.Power.bg:SetTexture(bartex)
-	self.Power.bg:SetAlpha(0.30)
+		--
+		-- powerbar background
+		--
+		self.Power.bg = self.Power:CreateTexture(nil, "BORDER")
+		self.Power.bg:SetAllPoints(self.Power)
+		self.Power.bg:SetTexture(bartex)
+		self.Power.bg:SetAlpha(0.30)
 
-	--
-	-- powerbar functions
-	--
-	self.Power.colorTapping = true
-	self.Power.colorDisconnected = true
-	self.Power.colorClass = true
-	self.Power.colorPower = true
-	self.Power.colorHappiness = false
-	self.PostUpdatePower = PostUpdatePower
+		--
+		-- powerbar functions
+		--
+		self.Power.colorTapping = true
+		self.Power.colorDisconnected = true
+		self.Power.colorClass = true
+		self.Power.colorPower = true
+		self.Power.colorHappiness = false
+		self.PostUpdatePower = PostUpdatePower
+	end
 
 	--
 	-- Info Line
 	--
+	local fontsize = settings["fontsize"]
 	self.InfoLeft = self.Health:CreateFontString(nil, "OVERLAY")
-	self.InfoLeft:SetPoint("LEFT", self, 0, 15)
+	self.InfoLeft:SetPoint("LEFT", self, 0, fontsize)
 	self.InfoLeft:SetJustifyH("LEFT")
 	self.InfoLeft:SetShadowOffset(1, -1)
+	self.InfoLeft:SetFont(font, fontsize, "OUTLINE")
+	self.InfoLeft:SetHeight(fontsize + 2)
 	self.InfoRight = self.Health:CreateFontString(nil, "OVERLAY")
-	self.InfoRight:SetPoint("RIGHT", self, 0, 15)
+	self.InfoRight:SetPoint("RIGHT", self, 0, fontsize)
 	self.InfoRight:SetJustifyH("RIGHT")
 	self.InfoRight:SetShadowOffset(1, -1)
+	self.InfoRight:SetFont(font, fontsize, "OUTLINE")
+	self.InfoLeft:SetHeight(fontsize + 2)
 	if unit=="player" then
-		self.InfoLeft:SetFont(font, fontsize, "OUTLINE")
-		self.InfoLeft:SetHeight(fontsize + 2)
-		self.InfoRight:SetFont(font, fontsize, "OUTLINE")
 		self:Tag(self.InfoLeft, "[curpp]")
 		self:Tag(self.InfoRight, "[dyscurhp(.)][perhp(%)]")
 	elseif unit=="target" then
-		self.InfoLeft:SetFont(font, fontsize, "OUTLINE")
-		self.InfoRight:SetFont(font, fontsize, "OUTLINE")
-		self.InfoLeft:SetHeight(fontsize + 2)
 		self:Tag(self.InfoLeft, "[difficulty][level][shortclassification][( )raidcolor][name(|r)]")
 		self:Tag(self.InfoRight, "[dyscurhp(.)][perhp(%)]")
 	else
-		self.InfoLeft:SetFont(font, smallfontsize, "OUTLINE")
-		self.InfoRight:SetFont(font, smallfontsize, "OUTLINE")
-		self.InfoLeft:SetHeight(smallfontsize + 2)
 		self:Tag(self.InfoLeft, "[raidcolor][name]")
 		self:Tag(self.InfoRight, "[perhp(%)]")
 	end
@@ -294,12 +290,9 @@ local func = function(self, unit)
 	-- player
 	-- ------------------------------------
 	if unit=="player" then
-		self:SetWidth(250)
-		self:SetHeight(27)
-		self.Health:SetHeight(15.5)
-		self.Power:SetHeight(10)
 		-- Check aggro, and update health color
 		self.OverrideUpdateThreat = checkThreatSituation
+
 		-- A texture or a frame is needed to activate threat module.
 		-- We won't be using it to display anything, though.
 		-- checkThreatSituation updates health bar color
@@ -413,10 +406,6 @@ local func = function(self, unit)
 	-- pet
 	-- ------------------------------------
 	if unit=="pet" then
-		self:SetWidth(120)
-		self:SetHeight(18)
-		self.Health:SetHeight(18)
-
 		if playerClass=="HUNTER" then
 			self.Health.colorReaction = false
 			self.Health.colorClass = false
@@ -434,11 +423,6 @@ local func = function(self, unit)
 	-- target
 	-- ------------------------------------
 	if unit=="target" then
-		self:SetWidth(250)
-		self:SetHeight(27)
-		self.Health:SetHeight(15.5)
-		self.Power:SetHeight(10)
-
 		self.Health.colorClass = false
 
 		--
@@ -495,11 +479,6 @@ local func = function(self, unit)
 	-- target of target and focus
 	-- ------------------------------------
 	if unit=="targettarget" or unit=="focus" or unit=="mouseover" or unit=="mouseovertarget" then
-		self:SetWidth(120)
-		self:SetHeight(18)
-		self.Health:SetHeight(18)
-		self.Power:Hide()
-
 		--
 		-- raid target icons
 		--
@@ -589,18 +568,14 @@ local func = function(self, unit)
 		self.Castbar.Time:SetJustifyH('RIGHT')
 	end
 	-- Clip name if needed
-	self.InfoLeft:SetWidth(self:GetWidth()*0.75)
+	self.InfoLeft:SetWidth(settings["initial-width"]*0.75)
 
 
+--[[
 	-- ------------------------------------
 	-- party
 	-- ------------------------------------
 	if(self:GetParent():GetName():match"oUF_Party") then
-		self:SetWidth(160)
-		self:SetHeight(20)
-		self.Health:SetHeight(15)
-		self.Power:SetHeight(3)
-
 		--
 		-- debuffs
 		--
@@ -629,12 +604,7 @@ local func = function(self, unit)
 	-- raid
 	-- ------------------------------------
 	if(self:GetParent():GetName():match"oUF_Raid") then
-		self:SetWidth(85)
-		self:SetHeight(15)
-		self.Health:SetHeight(15)
-		self.Power:Hide()
 		self.Health:SetFrameLevel(2)
-		self.Power:SetFrameLevel(2)
 
 		--
 		-- oUF_DebuffHighlight support
@@ -656,20 +626,12 @@ local func = function(self, unit)
 		self.inRangeAlpha = 1.0 -- what alpha if IN range
 		self.outsideRangeAlpha = 0.5 -- the alpha it will fade out to if not in range
 	end
-
+]]--
 	--
 	-- custom aura textures
 	--
 	self.PostCreateAuraIcon = auraIcon
 	self.SetAuraPosition = auraOffset
-
-	if(self:GetParent():GetName():match"oUF_Party") then
-		self:SetAttribute('initial-height', 20)
-		self:SetAttribute('initial-width', 160)
-	else
-		self:SetAttribute('initial-height', height)
-		self:SetAttribute('initial-width', width)
-	end
 
 	return self
 end
@@ -681,20 +643,47 @@ end
 --
 -- normal frames
 --
-oUF:RegisterStyle("Dys", func)
-
+oUF:RegisterStyle("Dys", setmetatable({
+	["initial-width"] = 250,
+	["initial-height"] = 27,
+	["healthbar-height"] = 15.5,
+	["have-powerbar"] = true,
+	["powerbar-height"] = 10,
+	["fontsize"] = 15,
+}, {__call = func}))
+oUF:RegisterStyle("Dys - small", setmetatable({
+	["initial-width"] = 120,
+	["initial-height"] = 18,
+	["healthbar-height"] = 18,
+	["fontsize"] = 12,
+}, {__call = func}))
+--[[
+oUF:RegisterStyle("Dys - party", setmetatable({
+	["initial-width"] = 160,
+	["initial-height"] = 20,
+	["healthbar-height"] = 15,
+	["have-powerbar"] = true,
+	["powerbar-height"] = 3,
+}, {__call = func}))
+oUF:RegisterStyle("Dys - party", setmetatable({
+	["initial-width"] = 85,
+	["initial-height"] = 15,
+	["healthbar-height"] = 15,
+}, {__call = func}))
+]]--
 oUF:SetActiveStyle("Dys")
 local player = oUF:Spawn("player", "oUF_Player")
 player:SetPoint("CENTER", -300, -260)
 local target = oUF:Spawn("target", "oUF_Target")
 target:SetPoint("CENTER", 300, -260)
+oUF:SetActiveStyle("Dys - small")
 local pet = oUF:Spawn("pet", "oUF_Pet")
 pet:SetPoint("BOTTOMLEFT", player, 0, -30)
 local tot = oUF:Spawn("targettarget", "oUF_TargetTarget")
 tot:SetPoint("TOPRIGHT", target, 0, 35)
 local focus	= oUF:Spawn("focus", "oUF_Focus")
 focus:SetPoint("BOTTOMRIGHT", player, 0, -30)
---[[ Dys: No need for this yet
+--[[ Dys: Not sure if it has any benefit other than "cool" factor.
 local mouseover = oUF:Spawn("mouseover", "oUF_MO")
 mouseover:SetPoint("BOTTOMLEFT", pet, 0, -30)
 local mouseovertarget = oUF:Spawn("mouseovertarget", "oUF_MOT")
