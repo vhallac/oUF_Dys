@@ -363,10 +363,6 @@ local func = function(settings, self, unit)
 		self.Spark:SetBlendMode("ADD")
 		self.Spark:SetHeight(self.Power:GetHeight()*2.5)
 		self.Spark:SetWidth(self.Power:GetHeight()*2)
-		-- self.Spark.rtl = true -- Make the spark go from Right To Left instead
-		-- self.Spark.manatick = true -- Show mana regen ticks outside FSR (like the energy ticker)
-		-- self.Spark.highAlpha = 1 	-- What alpha setting to use for the FSR and energy spark
-		-- self.Spark.lowAlpha = 0.25 -- What alpha setting to use for the mana regen ticker
 
 		--
 		-- oUF_BarFader
@@ -526,62 +522,6 @@ local func = function(settings, self, unit)
 		self.RaidIcon:SetTexture"Interface\\TargetingFrame\\UI-RaidTargetingIcons"
 	end
 
---[[
-	-- ------------------------------------
-	-- party
-	-- ------------------------------------
-	if(self:GetParent():GetName():match"oUF_Party") then
-		--
-		-- debuffs
-		--
-		self.Debuffs = CreateFrame("Frame", nil, self)
-		self.Debuffs.size = 20 * 1.3
-		self.Debuffs:SetHeight(self.Debuffs.size)
-		self.Debuffs:SetWidth(self.Debuffs.size * 5)
-		self.Debuffs:SetPoint("LEFT", self, "RIGHT", 5, 0)
-		self.Debuffs.initialAnchor = "TOPLEFT"
-		self.Debuffs.filter = false
-		self.Debuffs.showDebuffType = true
-		self.Debuffs.spacing = 2
-		self.Debuffs.num = 2 -- max debuffs
-
-		--
-		-- raid target icons
-		--
-		self.RaidIcon = self.Health:CreateTexture(nil, "OVERLAY")
-		self.RaidIcon:SetHeight(24)
-		self.RaidIcon:SetWidth(24)
-		self.RaidIcon:SetPoint("LEFT", self, -30, 0)
-		self.RaidIcon:SetTexture"Interface\\TargetingFrame\\UI-RaidTargetingIcons"
-	end
-
-	-- ------------------------------------
-	-- raid
-	-- ------------------------------------
-	if(self:GetParent():GetName():match"oUF_Raid") then
-		self.Health:SetFrameLevel(2)
-
-		--
-		-- oUF_DebuffHighlight support
-		--
-		self.DebuffHighlight = self.Health:CreateTexture(nil, "OVERLAY")
-		self.DebuffHighlight:SetAllPoints(self.Health)
-		self.DebuffHighlight:SetTexture("Interface\\AddOns\\oUF_Dys\\textures\\highlight.tga")
-		self.DebuffHighlight:SetBlendMode("ADD")
-		self.DebuffHighlight:SetVertexColor(0, 0, 0, 0)
-		self.DebuffHighlightAlpha = 0.8
-		self.DebuffHighlightFilter = true
-	end
-
-	--
-	-- fading for party and raid
-	--
-	if(not unit) then -- fadeout if units are out of range
-		self.Range = false -- put true to make party/raid frames fade out if not in your range
-		self.inRangeAlpha = 1.0 -- what alpha if IN range
-		self.outsideRangeAlpha = 0.5 -- the alpha it will fade out to if not in range
-	end
-]]--
 	--
 	-- custom aura textures
 	--
@@ -606,6 +546,7 @@ oUF:RegisterStyle("Dys", setmetatable({
 	["powerbar-height"] = 10,
 	["fontsize"] = 15,
 }, {__call = func}))
+
 oUF:RegisterStyle("Dys - medium", setmetatable({
 	["initial-width"] = 180,
 	["initial-height"] = 20,
@@ -614,26 +555,14 @@ oUF:RegisterStyle("Dys - medium", setmetatable({
 	["powerbar-height"] = 3,
 	["fontsize"] = 13,
 }, {__call = func}))
+
 oUF:RegisterStyle("Dys - small", setmetatable({
 	["initial-width"] = 120,
 	["initial-height"] = 18,
 	["healthbar-height"] = 18,
 	["fontsize"] = 12,
 }, {__call = func}))
---[[
-oUF:RegisterStyle("Dys - party", setmetatable({
-	["initial-width"] = 160,
-	["initial-height"] = 20,
-	["healthbar-height"] = 15,
-	["have-powerbar"] = true,
-	["powerbar-height"] = 3,
-}, {__call = func}))
-oUF:RegisterStyle("Dys - party", setmetatable({
-	["initial-width"] = 85,
-	["initial-height"] = 15,
-	["healthbar-height"] = 15,
-}, {__call = func}))
-]]--
+
 oUF:SetActiveStyle("Dys")
 local player = oUF:Spawn("player", "oUF_Player")
 player:SetPoint("CENTER", -300, -260)
@@ -657,64 +586,3 @@ for i = 1, MAX_BOSS_FRAMES do
 	end
 end
 
---[[ Dys: Not sure if it has any benefit other than "cool" factor.
-local mouseover = oUF:Spawn("mouseover", "oUF_MO")
-mouseover:SetPoint("BOTTOMLEFT", pet, 0, -30)
-local mouseovertarget = oUF:Spawn("mouseovertarget", "oUF_MOT")
-mouseovertarget:SetPoint("BOTTOMLEFT", focus, 0, -30)
-]]--
-
-
---[[
---
--- party
---
-local party	= oUF:Spawn("header", "oUF_Party")
-party:SetManyAttributes("showParty", true, "yOffset", -15)
-party:SetPoint("TOPLEFT", 35, -320)
-party:Show()
-party:SetAttribute("showRaid", false)
-]]--
---[[
---
--- raid
---
-local Raid = {}
-for i = 1, NUM_RAID_GROUPS do
-	local RaidGroup = oUF:Spawn("header", "oUF_Raid" .. i)
-	RaidGroup:SetAttribute("groupFilter", tostring(i))
-	RaidGroup:SetAttribute("showRaid", true)
-	RaidGroup:SetAttribute("yOffset", -10)
-	RaidGroup:SetAttribute("point", "TOP")
-	RaidGroup:SetAttribute("showRaid", true)
-	table.insert(Raid, RaidGroup)
-	if i == 1 then
-		RaidGroup:SetPoint("TOPLEFT", UIParent, 35, -35)
-	else
-		RaidGroup:SetPoint("TOPLEFT", Raid[i-1], "TOPRIGHT", 10, 0)
-	end
-	RaidGroup:Show()
-end
-]]--
---[[
---
--- party toggle in raid
---
-local partyToggle = CreateFrame('Frame')
-partyToggle:RegisterEvent('PLAYER_LOGIN')
-partyToggle:RegisterEvent('RAID_ROSTER_UPDATE')
-partyToggle:RegisterEvent('PARTY_LEADER_CHANGED')
-partyToggle:RegisterEvent('PARTY_MEMBER_CHANGED')
-partyToggle:SetScript('OnEvent', function(self)
-	if(InCombatLockdown()) then
-		self:RegisterEvent('PLAYER_REGEN_ENABLED')
-	else
-		self:UnregisterEvent('PLAYER_REGEN_DISABLED')
-		if(HIDE_PARTY_INTERFACE == "1" and GetNumRaidMembers() > 0) then
-			party:Hide()
-		else
-			party:Show()
-		end
-	end
-end)
-]]--
