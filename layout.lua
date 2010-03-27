@@ -32,8 +32,10 @@ local UnitCreatureType = UnitCreatureType
 local UnitClassification = UnitClassification
 local UnitReactionColor = UnitReactionColor
 local RAID_CLASS_COLORS = RAID_CLASS_COLORS
--- Pick up the global, which is controlled by X-oUF of the TOC file.
-local oUF = oUF_Dys
+-- Pick up the global oUF
+local parent, ns = ...
+local oUF = ns.oUF
+if not oUF then return end
 
 -- ------------------------------------------------------------------------
 -- font, fontsize and textures
@@ -42,7 +44,7 @@ local font = "Interface\\AddOns\\oUF_Dys\\fonts\\font.ttf"
 local upperfont = "Interface\\AddOns\\oUF_Dys\\fonts\\upperfont.ttf"
 local bartex = "Interface\\AddOns\\oUF_Dys\\textures\\statusbar"
 local bufftex = "Interface\\AddOns\\oUF_Dys\\textures\\border"
-local highlighttex = "Interface\\AddOns\\oUF_Dys\\textures\\statusbar"
+local highlighttex = "Inerface\\AddOns\\oUF_Dys\\textures\\statusbar"
 local playerClass = select(2, UnitClass("player"))
 
 -- castbar position

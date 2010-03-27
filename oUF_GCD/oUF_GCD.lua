@@ -1,8 +1,8 @@
-local parent = debugstack():match[[\AddOns\(.-)\]]
-local global = GetAddOnMetadata(parent, 'X-oUF')
-assert(global, 'X-oUF needs to be defined in the parent add-on.')
-local oUF = _G[global]
+-- Pick up the global oUF
+local parent, ns = ...
+local oUF = ns.oUF
 if not oUF then return end
+
 -- based on oUF_GCD by Exactly.
 
 --[[

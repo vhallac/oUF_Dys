@@ -1,6 +1,9 @@
 
--- Pick up the global, which is controlled by X-oUF of the TOC file.
-local oUF = oUF_Dys
+-- Pick up the global oUF
+local parent, ns = ...
+local oUF = ns.oUF
+if not oUF then return end
+
 local SM = LibStub("LibSharedMedia-3.0")
 local spacing_x = 3
 local spacing_y = -3
