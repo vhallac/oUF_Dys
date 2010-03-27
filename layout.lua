@@ -175,6 +175,10 @@ end
 -- Custom filter for Auras
 -- ------------------------------------------------------------------------
 local auraFilter = function(auras, unit, aura, name, rank, texture, count, dtype, duration, timeLeft, caster)
+	if string.find(name, "Bested") then
+		return false
+	end
+
 	if name ~= "Tricked or Treated" then
 		return true
 	end
@@ -500,77 +504,6 @@ local func = function(settings, self, unit)
 			self.BarFade = true
 			self.BarFadeAlpha = 0.2
 		end
-	end
-
-	-- ------------------------------------
-	-- player and target castbar
-	-- ------------------------------------
-	if(unit == 'player' or unit == 'target') then
-		self.Castbar = CreateFrame('StatusBar', nil, self)
-		self.Castbar:SetStatusBarTexture(bartex)
-
-		if(unit == "player") then
-			self.Castbar:SetStatusBarColor(1, 0.50, 0)
-			self.Castbar:SetHeight(24)
-			self.Castbar:SetWidth(260)
-
-			self.Castbar:SetBackdrop({
-				bgFile = "Interface\ChatFrame\ChatFrameBackground",
-				insets = {top = -3, left = -3, bottom = -3, right = -3}})
-
-			self.Castbar.SafeZone = self.Castbar:CreateTexture(nil,"ARTWORK")
-			self.Castbar.SafeZone:SetTexture(bartex)
-			self.Castbar.SafeZone:SetVertexColor(.75,.10,.10,.6)
-			self.Castbar.SafeZone:SetPoint("TOPRIGHT")
-			self.Castbar.SafeZone:SetPoint("BOTTOMRIGHT")
-
-			self.Castbar:SetPoint('CENTER', UIParent, 'CENTER', playerCastBar_x, playerCastBar_y)
-
-			--
-			-- GCD
-			--
-			self.GCD = CreateFrame("StatusBar", nil, self)
-			self.GCD:SetPoint('TOPLEFT', self.Castbar, 'BOTTOMLEFT')
-			self.GCD:SetPoint('TOPRIGHT', self.Castbar, 'BOTTOMRIGHT')
-			self.GCD:SetHeight(4)
-			self.GCD:SetStatusBarTexture(bartex)
-			self.GCD:SetStatusBarColor(0.55, 0.57, 0.61)
-		else
-			self.Castbar:SetStatusBarColor(0.80, 0.01, 0)
-			self.Castbar:SetHeight(24)
-			self.Castbar:SetWidth(286)
-
-			self.Castbar:SetBackdrop({
-				bgFile = "Interface\ChatFrame\ChatFrameBackground",
-				insets = {top = -3, left = -30, bottom = -3, right = -3}})
-
-			self.Castbar.Icon = self.Castbar:CreateTexture(nil, 'OVERLAY')
-			self.Castbar.Icon:SetPoint("RIGHT", self.Castbar, "LEFT", -3, 0)
-			self.Castbar.Icon:SetHeight(24)
-			self.Castbar.Icon:SetWidth(24)
-			self.Castbar.Icon:SetTexCoord(0.1,0.9,0.1,0.9)
-
-			self.Castbar:SetPoint('CENTER', UIParent, 'CENTER', targetCastBar_x, targetCastBar_y)
-		end
-
-		self.Castbar:SetBackdropColor(0, 0, 0, 0.5)
-
-		self.Castbar.bg = self.Castbar:CreateTexture(nil, 'BORDER')
-		self.Castbar.bg:SetAllPoints(self.Castbar)
-		self.Castbar.bg:SetTexture(0, 0, 0, 0.6)
-
-		self.Castbar.Text = self.Castbar:CreateFontString(nil, 'OVERLAY')
-		self.Castbar.Text:SetPoint('LEFT', self.Castbar, 2, 0)
-		self.Castbar.Text:SetFont(upperfont, 11, "OUTLINE")
-		self.Castbar.Text:SetShadowOffset(1, -1)
-		self.Castbar.Text:SetTextColor(1, 1, 1)
-		self.Castbar.Text:SetJustifyH('LEFT')
-
-		self.Castbar.Time = self.Castbar:CreateFontString(nil, 'OVERLAY')
-		self.Castbar.Time:SetPoint('RIGHT', self.Castbar, -2, 0)
-		self.Castbar.Time:SetFont(upperfont, 12, "OUTLINE")
-		self.Castbar.Time:SetTextColor(1, 1, 1)
-		self.Castbar.Time:SetJustifyH('RIGHT')
 	end
 
 	-- Clip name if needed
