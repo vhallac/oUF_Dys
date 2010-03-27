@@ -30,10 +30,12 @@ SM:Register("sound", "beam11", "Interface\\AddOns\\oUF_Dys\\sounds\\beam11.wav")
 
 local function HasDebuffType(unit, debuffSpells)
 	for i=1,40 do
-		local name, _, _, _, debuffType = UnitDebuff(unit, i, 1)
-		if not name or not debuffType or not debuffSpells[debuffType] then return end
-		local inRange = IsSpellInRange(debuffSpells[debuffType], "spell", unit)
-		return true, inRange
+		local name, _, _, _, debuffType = UnitDebuff(unit, i, "RAID")
+		if not name then return end
+		if debuffType and debuffSpells[debuffType] then
+			local inRange = IsSpellInRange(debuffSpells[debuffType], "spell", unit)
+			return true, inRange
+		end
 	end
 end
 
