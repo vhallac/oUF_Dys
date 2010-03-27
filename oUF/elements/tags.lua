@@ -8,12 +8,10 @@
 --	- Tag and Untag should be able to handle more than one fontstring at a time.
 ]]
 
-local parent = debugstack():match[[\AddOns\(.-)\]]
-local global = GetAddOnMetadata(parent, 'X-oUF')
-assert(global, 'X-oUF needs to be defined in the parent add-on.')
-local oUF = _G[global]
+local parent, ns = ...
+local oUF = ns.oUF
 
-local classColors = oUF.colors.class
+local classColors
 
 local function Hex(r, g, b)
 	if type(r) == "table" then
@@ -220,7 +218,7 @@ local tagEvents = {
 	['[rare]']                = 'UNIT_CLASSIFICATION_CHANGED',
 	['[classification]']      = 'UNIT_CLASSIFICATION_CHANGED',
 	['[shortclassification]'] = 'UNIT_CLASSIFICATION_CHANGED',
-	["[group]"]                 = "RAID_ROSTER_UPDATE",
+	["[group]"]               = "RAID_ROSTER_UPDATE",
 }
 
 local unitlessEvents = {
@@ -235,6 +233,8 @@ frame:SetScript('OnEvent', function(self, event, unit)
 	if(strings) then
 		for k, fontstring in next, strings do
 			if(not unitlessEvents[event] and fontstring.parent.unit == unit and fontstring:IsVisible()) then
+				-- XXX: Fix this for 1.4
+				classColors = fontstring.parent.colors.class
 				fontstring:UpdateTag()
 			end
 		end
@@ -256,6 +256,8 @@ local createOnUpdate = function(timer)
 			if(total >= timer) then
 				for k, fs in next, strings do
 					if(fs.parent:IsShown() and UnitExists(fs.parent.unit)) then
+						-- XXX: Fix this for 1.4.
+						classColors = fs.parent.colors.class
 						fs:UpdateTag()
 					end
 				end
@@ -271,6 +273,8 @@ local createOnUpdate = function(timer)
 end
 
 local OnShow = function(self)
+	-- XXX: Fix this for 1.4.
+	classColors = self.colors.class
 	for _, fs in next, self.__tags do
 		fs:UpdateTag()
 	end
@@ -315,7 +319,7 @@ local funcPool = {}
 local tmp = {}
 
 local Tag = function(self, fs, tagstr)
-	if(not fs or not tagstr or self == oUF) then return end
+	if(not fs or not tagstr) then return end
 
 	if(not self.__tags) then
 		self.__tags = {}
@@ -396,7 +400,7 @@ local Tag = function(self, fs, tagstr)
 
 		func = function(self)
 			local unit = self.parent.unit
-			local __unit = self.parent.__unit
+			local __unit = self.parent.realUnit
 
 			for i, func in next, args do
 				tmp[i] = func(unit, __unit) or ''
@@ -430,7 +434,7 @@ local Tag = function(self, fs, tagstr)
 end
 
 local Untag = function(self, fs)
-	if(not fs or self == oUF) then return end
+	if(not fs) then return end
 
 	UnregisterEvents(fs)
 	for _, timers in next, eventlessUnits do
@@ -454,5 +458,5 @@ oUF.Tags = tags
 oUF.TagEvents = tagEvents
 oUF.UnitlessTagEvents = unitlessEvents
 
-oUF.Tag = Tag
-oUF.Untag = Untag
+oUF.frame_metatable.__index.Tag = Tag
+oUF.frame_metatable.__index.Untag = Untag

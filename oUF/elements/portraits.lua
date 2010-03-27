@@ -1,10 +1,9 @@
-local parent = debugstack():match[[\AddOns\(.-)\]]
-local global = GetAddOnMetadata(parent, 'X-oUF')
-assert(global, 'X-oUF needs to be defined in the parent add-on.')
-local oUF = _G[global]
+local parent, ns = ...
+local oUF = ns.oUF
 
 local Update = function(self, event, unit)
 	if(not UnitIsUnit(self.unit, unit)) then return end
+	if(self.PreUpdatePortrait) then self:PreUpdatePortrait(event, unit) end
 
 	local portrait = self.Portrait
 	if(portrait:IsObjectType'Model') then
@@ -14,8 +13,10 @@ local Update = function(self, event, unit)
 			portrait:SetPosition(0, 0, -1.5)
 			portrait:SetModel"Interface\\Buttons\\talktomequestionmark.mdx"
 		elseif(portrait.name ~= name or event == 'UNIT_MODEL_CHANGED') then
+			local alpha = portrait:GetAlpha()
 			portrait:SetUnit(unit)
 			portrait:SetCamera(0)
+			portrait:SetAlpha(alpha)
 
 			portrait.name = name
 		else
@@ -23,6 +24,10 @@ local Update = function(self, event, unit)
 		end
 	else
 		SetPortraitTexture(portrait, unit)
+	end
+
+	if(self.PostUpdatePortrait) then
+		return self:PostUpdatePortrait(event, unit)
 	end
 end
 

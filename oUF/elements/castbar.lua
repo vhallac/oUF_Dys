@@ -13,10 +13,8 @@
 	 - :CustomTimeText(duration)
 
 --]]
-local parent = debugstack():match[[\AddOns\(.-)\]]
-local global = GetAddOnMetadata(parent, 'X-oUF')
-assert(global, 'X-oUF needs to be defined in the parent add-on.')
-local oUF = _G[global]
+local parent, ns = ...
+local oUF = ns.oUF
 
 local noop = function() end
 local UnitName = UnitName
@@ -46,7 +44,7 @@ local UNIT_SPELLCAST_START = function(self, event, unit, spell, spellrank)
 	castbar.interrupt = interrupt
 
 	castbar:SetMinMaxValues(0, max)
-	castbar:SetValue(castbar.duration)
+	castbar:SetValue(0)
 
 	if(castbar.Text) then castbar.Text:SetText(text) end
 	if(castbar.Icon) then castbar.Icon:SetTexture(texture) end
@@ -58,12 +56,6 @@ local UNIT_SPELLCAST_START = function(self, event, unit, spell, spellrank)
 		sf:SetPoint'RIGHT'
 		sf:SetPoint'TOP'
 		sf:SetPoint'BOTTOM'
-		local width = castbar:GetWidth()
-		local _, _, ms = GetNetStats()
-		-- MADNESS!
-		local safeZonePercent = (width / castbar.max) * (ms / 1e5)
-		if(safeZonePercent > 1) then safeZonePercent = 1 end
-		sf:SetWidth(width * safeZonePercent)
 	end
 
 	if(self.PostCastStart) then self:PostCastStart(event, unit, name, rank, text, castid, interrupt) end
@@ -83,7 +75,9 @@ local UNIT_SPELLCAST_FAILED = function(self, event, unit, spellname, spellrank, 
 	castbar:SetValue(0)
 	castbar:Hide()
 
-	if(self.PostCastFailed) then self:PostCastFailed(event, unit, spellname, spellrank, castid) end
+	if(self.PostCastFailed) then
+		return self:PostCastFailed(event, unit, spellname, spellrank, castid)
+	end
 end
 
 local UNIT_SPELLCAST_INTERRUPTED = function(self, event, unit, spellname, spellrank, castid)
@@ -99,7 +93,9 @@ local UNIT_SPELLCAST_INTERRUPTED = function(self, event, unit, spellname, spellr
 	castbar:SetValue(0)
 	castbar:Hide()
 
-	if(self.PostCastInterrupted) then self:PostCastInterrupted(event, unit, spellname, spellrank, castid) end
+	if(self.PostCastInterrupted) then
+		return self:PostCastInterrupted(event, unit, spellname, spellrank, castid)
+	end
 end
 
 local UNIT_SPELLCAST_DELAYED = function(self, event, unit, spellname, spellrank)
@@ -117,7 +113,9 @@ local UNIT_SPELLCAST_DELAYED = function(self, event, unit, spellname, spellrank)
 
 	castbar:SetValue(duration)
 
-	if(self.PostCastDelayed) then self:PostCastDelayed(event, unit, name, rank, text) end
+	if(self.PostCastDelayed) then
+		return self:PostCastDelayed(event, unit, name, rank, text)
+	end
 end
 
 local UNIT_SPELLCAST_STOP = function(self, event, unit, spellname, spellrank, castid)
@@ -133,7 +131,9 @@ local UNIT_SPELLCAST_STOP = function(self, event, unit, spellname, spellrank, ca
 	castbar:SetValue(0)
 	castbar:Hide()
 
-	if(self.PostCastStop) then self:PostCastStop(event, unit, spellname, spellrank, castid) end
+	if(self.PostCastStop) then
+		return self:PostCastStop(event, unit, spellname, spellrank, castid)
+	end
 end
 
 local UNIT_SPELLCAST_CHANNEL_START = function(self, event, unit, spellname, spellrank)
@@ -193,7 +193,9 @@ local UNIT_SPELLCAST_CHANNEL_UPDATE = function(self, event, unit, spellname, spe
 	castbar:SetMinMaxValues(0, castbar.max)
 	castbar:SetValue(duration)
 
-	if(self.PostChannelUpdate) then self:PostChannelUpdate(event, unit, name, rank, text) end
+	if(self.PostChannelUpdate) then
+		return self:PostChannelUpdate(event, unit, name, rank, text)
+	end
 end
 
 local UNIT_SPELLCAST_CHANNEL_STOP = function(self, event, unit, spellname, spellrank)
@@ -207,7 +209,9 @@ local UNIT_SPELLCAST_CHANNEL_STOP = function(self, event, unit, spellname, spell
 		castbar:SetValue(castbar.max)
 		castbar:Hide()
 
-		if(self.PostChannelStop) then self:PostChannelStop(event, unit, spellname, spellrank) end
+		if(self.PostChannelStop) then
+			return self:PostChannelStop(event, unit, spellname, spellrank)
+		end
 	end
 end
 
@@ -223,6 +227,15 @@ local onUpdate = function(self, elapsed)
 			if(parent.PostCastStop) then parent:PostCastStop('OnUpdate', parent.unit) end
 
 			return
+		end
+
+		if self.SafeZone then
+			local width = self:GetWidth()
+			local _, _, ms = GetNetStats()
+			-- MADNESS!
+			local safeZonePercent = (width / self.max) * (ms / 1e5)
+			if(safeZonePercent > 1) then safeZonePercent = 1 end
+			self.SafeZone:SetWidth(width * safeZonePercent)
 		end
 
 		if self.Time then
@@ -368,5 +381,5 @@ end
 
 oUF:AddElement('Castbar', function(...)
 	UNIT_SPELLCAST_START(...)
-	UNIT_SPELLCAST_CHANNEL_START(...)
+	return UNIT_SPELLCAST_CHANNEL_START(...)
 end, Enable, Disable)

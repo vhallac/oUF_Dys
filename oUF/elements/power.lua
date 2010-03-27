@@ -24,27 +24,13 @@
 	 will disable the above color settings.
 	 - :PostUpdatePower(event, unit, bar, min, max)
 --]]
-local parent = debugstack():match[[\AddOns\(.-)\]]
-local global = GetAddOnMetadata(parent, 'X-oUF')
-assert(global, 'X-oUF needs to be defined in the parent add-on.')
-local oUF = _G[global]
+local parent, ns = ...
+local oUF = ns.oUF
 
-local UnitManaMax = UnitManaMax
-local UnitPowerType = UnitPowerType
-local min, max, bar
-
-local OnPowerUpdate
-do
-	local UnitMana = UnitMana
-	OnPowerUpdate = function(self)
-		if(self.disconnected) then return end
-		local power = UnitMana(self.unit)
-
-		if(power ~= self.min) then
-			self.min = power
-
-			self:GetParent():UNIT_MAXMANA("OnPowerUpdate", self.unit)
-		end
+oUF.colors.power = {}
+for power, color in next, PowerBarColor do
+	if(type(power) == 'string') then
+		oUF.colors.power[power] = {color.r, color.g, color.b}
 	end
 end
 
@@ -52,12 +38,18 @@ local Update = function(self, event, unit)
 	if(self.unit ~= unit) then return end
 	if(self.PreUpdatePower) then self:PreUpdatePower(event, unit) end
 
-	min, max = UnitMana(unit), UnitManaMax(unit)
-	bar = self.Power
+	local min, max = UnitPower(unit), UnitPowerMax(unit)
+	local disconnected = not UnitIsConnected(unit)
+	local bar = self.Power
 	bar:SetMinMaxValues(0, max)
-	bar:SetValue(min)
 
-	bar.disconnected = not UnitIsConnected(unit)
+	if(disconnected) then
+		bar:SetValue(max)
+	else
+		bar:SetValue(min)
+	end
+
+	bar.disconnected = disconnected
 	bar.unit = unit
 
 	if(not self.OverrideUpdatePower) then
@@ -69,9 +61,12 @@ local Update = function(self, event, unit)
 		elseif(bar.colorHappiness and unit == "pet" and GetPetHappiness()) then
 			t = self.colors.happiness[GetPetHappiness()]
 		elseif(bar.colorPower) then
-			local _, ptype = UnitPowerType(unit)
+			local ptype, ptoken, altR, altG, altB  = UnitPowerType(unit)
 
-			t = self.colors.power[ptype]
+			t = self.colors.power[ptoken]
+			if(not t and altR) then
+				r, g, b = altR, altG, altB
+			end
 		elseif(bar.colorClass and UnitIsPlayer(unit)) or
 			(bar.colorClassNPC and not UnitIsPlayer(unit)) or
 			(bar.colorClassPet and UnitPlayerControlled(unit) and not UnitIsPlayer(unit)) then
@@ -100,14 +95,30 @@ local Update = function(self, event, unit)
 		self:OverrideUpdatePower(event, unit, bar, min, max)
 	end
 
-	if(self.PostUpdatePower) then self:PostUpdatePower(event, unit, bar, min, max) end
+	if(self.PostUpdatePower) then
+		return self:PostUpdatePower(event, unit, bar, min, max)
+	end
+end
+
+local OnPowerUpdate
+do
+	local UnitPower = UnitPower
+	OnPowerUpdate = function(self)
+		if(self.disconnected) then return end
+		local power = UnitPower(self.unit)
+
+		if(power ~= self.min) then
+			self.min = power
+
+			return Update(self:GetParent(), 'OnPowerUpdate', self.unit)
+		end
+	end
 end
 
 local Enable = function(self, unit)
 	local power = self.Power
 	if(power) then
 		if(power.frequentUpdates and (unit == 'player' or unit == 'pet')) then
-			power.disconnected = true
 			power:SetScript("OnUpdate", OnPowerUpdate)
 		else
 			self:RegisterEvent("UNIT_MANA", Update)

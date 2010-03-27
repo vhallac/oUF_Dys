@@ -25,36 +25,27 @@
 	 will disable the above color settings.
 	 - :PostUpdateHealth(event, unit, bar, min, max)
 --]]
-local parent = debugstack():match[[\AddOns\(.-)\]]
-local global = GetAddOnMetadata(parent, 'X-oUF')
-assert(global, 'X-oUF needs to be defined in the parent add-on.')
-local oUF = _G[global]
+local parent, ns = ...
+local oUF = ns.oUF
 
-local OnHealthUpdate
-do
-	local UnitHealth = UnitHealth
-	OnHealthUpdate = function(self)
-		if(self.disconnected) then return end
-		local health = UnitHealth(self.unit)
-
-		if(health ~= self.min) then
-			self.min = health
-
-			self:GetParent():UNIT_MAXHEALTH("OnHealthUpdate", self.unit)
-		end
-	end
-end
+oUF.colors.health = {49/255, 207/255, 37/255}
 
 local Update = function(self, event, unit)
 	if(self.unit ~= unit) then return end
 	if(self.PreUpdateHealth) then self:PreUpdateHealth(event, unit) end
 
 	local min, max = UnitHealth(unit), UnitHealthMax(unit)
+	local disconnected = not UnitIsConnected(unit)
 	local bar = self.Health
 	bar:SetMinMaxValues(0, max)
-	bar:SetValue(min)
 
-	bar.disconnected = not UnitIsConnected(unit)
+	if(disconnected) then
+		bar:SetValue(max)
+	else
+		bar:SetValue(min)
+	end
+
+	bar.disconnected = disconnected
 	bar.unit = unit
 
 	if(not self.OverrideUpdateHealth) then
@@ -72,7 +63,7 @@ local Update = function(self, event, unit)
 			t = self.colors.class[class]
 		elseif(bar.colorReaction and UnitReaction(unit, 'player')) then
 			t = self.colors.reaction[UnitReaction(unit, "player")]
-		elseif(bar.colorSmooth and max ~= 0) then
+		elseif(bar.colorSmooth) then
 			r, g, b = self.ColorGradient(min / max, unpack(bar.smoothGradient or self.colors.smooth))
 		elseif(bar.colorHealth) then
 			t = self.colors.health
@@ -95,18 +86,40 @@ local Update = function(self, event, unit)
 		self:OverrideUpdateHealth(event, unit, bar, min, max)
 	end
 
-	if(self.PostUpdateHealth) then self:PostUpdateHealth(event, unit, bar, min, max) end
+	if(self.PostUpdateHealth) then
+		return self:PostUpdateHealth(event, unit, bar, min, max)
+	end
 end
 
-local Enable = function(self)
+local OnHealthUpdate
+do
+	local UnitHealth = UnitHealth
+	OnHealthUpdate = function(self)
+		if(self.disconnected) then return end
+		local health = UnitHealth(self.unit)
+
+		if(health ~= self.min) then
+			self.min = health
+
+			return Update(self:GetParent(), "OnHealthUpdate", self.unit)
+		end
+	end
+end
+
+local Enable = function(self, unit)
 	local health = self.Health
 	if(health) then
-		if(health.frequentUpdates and (self.unit and not self.unit:match'%w+target$') or not self.unit) then
-			health.disconnected = true
+		if(health.frequentUpdates and (unit and not unit:match'%w+target$') or not unit) then
 			health:SetScript('OnUpdate', OnHealthUpdate)
+
+			-- The party frames need this to handle disconnect states correctly.
+			if(not unit) then
+				self:RegisterEvent("UNIT_HEALTH", Update)
+			end
 		else
 			self:RegisterEvent("UNIT_HEALTH", Update)
 		end
+
 		self:RegisterEvent("UNIT_MAXHEALTH", Update)
 		self:RegisterEvent('UNIT_HAPPINESS', Update)
 		-- For tapping.
