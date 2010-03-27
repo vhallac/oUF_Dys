@@ -159,7 +159,7 @@ oUF.Tags["[dyscurhp]"] = function(u)
 end
 
 local colorHealthRed = function(self, event, unit, bar, min, max)
-	bar:SetStatusBarColor(1, 0, 0)
+						   bar:SetStatusBarColor(1, 0, 0)
 end
 
 local checkThreatSituation = function(self, event, unit, status)
@@ -282,6 +282,9 @@ local func = function(settings, self, unit)
 		self:Tag(self.InfoRight, "[dyscurhp(.)][perhp(%)]")
 	elseif unit=="target" then
 		self:Tag(self.InfoLeft, "[difficulty][level][shortclassification][( )raidcolor][name(|r)]")
+		self:Tag(self.InfoRight, "[dyscurhp(.)][perhp(%)]")
+	elseif unit:match("boss") then
+		self:Tag(self.InfoLeft, "[name]")
 		self:Tag(self.InfoRight, "[dyscurhp(.)][perhp(%)]")
 	else
 		self:Tag(self.InfoLeft, "[raidcolor][name]")
@@ -569,9 +572,26 @@ local func = function(settings, self, unit)
 		self.Castbar.Time:SetTextColor(1, 1, 1)
 		self.Castbar.Time:SetJustifyH('RIGHT')
 	end
+
 	-- Clip name if needed
 	self.InfoLeft:SetWidth(settings["initial-width"]*0.75)
 
+
+	-- ------------------------------------
+	-- boss frames
+	-- ------------------------------------
+	if unit:match("boss") then
+		self.Health.colorClass = false
+
+		--
+		-- raid target icons
+		--
+		self.RaidIcon = self.Health:CreateTexture(nil, "OVERLAY")
+		self.RaidIcon:SetHeight(24)
+		self.RaidIcon:SetWidth(24)
+		self.RaidIcon:SetPoint("RIGHT", self, 30, 0)
+		self.RaidIcon:SetTexture"Interface\\TargetingFrame\\UI-RaidTargetingIcons"
+	end
 
 --[[
 	-- ------------------------------------
@@ -653,6 +673,14 @@ oUF:RegisterStyle("Dys", setmetatable({
 	["powerbar-height"] = 10,
 	["fontsize"] = 15,
 }, {__call = func}))
+oUF:RegisterStyle("Dys - medium", setmetatable({
+	["initial-width"] = 180,
+	["initial-height"] = 20,
+	["healthbar-height"] = 15,
+	["have-powerbar"] = true,
+	["powerbar-height"] = 3,
+	["fontsize"] = 13,
+}, {__call = func}))
 oUF:RegisterStyle("Dys - small", setmetatable({
 	["initial-width"] = 120,
 	["initial-height"] = 18,
@@ -685,6 +713,17 @@ local tot = oUF:Spawn("targettarget", "oUF_TargetTarget")
 tot:SetPoint("TOPRIGHT", target, 0, 35)
 local focus	= oUF:Spawn("focus", "oUF_Focus")
 focus:SetPoint("BOTTOMRIGHT", player, 0, -30)
+oUF:SetActiveStyle("Dys - medium")
+local bosses = {}
+for i = 1, MAX_BOSS_FRAMES do
+	bosses[i] = oUF:Spawn("boss"..i, "oUF_Boss" .. i)
+	if i == 1 then
+		bosses[i]:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", 5, 700)
+	else
+		bosses[i]:SetPoint("TOP", bosses[i-1], "BOTTOM", 0, -15)
+	end
+end
+
 --[[ Dys: Not sure if it has any benefit other than "cool" factor.
 local mouseover = oUF:Spawn("mouseover", "oUF_MO")
 mouseover:SetPoint("BOTTOMLEFT", pet, 0, -30)
