@@ -267,13 +267,15 @@ local SetTxtAuraPosition = function(self, auras, x)
 end
 
 local Update = function(self, event, unit)
-	if(self.unit ~= unit) then return end
-	if(self.PreUpdateTxtAura) then self:PreUpdateTxtAura(event, unit) end
+	if self.unit ~= unit  then return end
+
+	if self.PreUpdateTxtAura then
+		self:PreUpdateTxtAura(event, unit)
+	end
 
 	local auras, buffs, debuffs = self.TxtAuras, self.TxtBuffs, self.TxtDebuffs
 
-	--[[
-	if(auras) then
+	if auras then
 		local buffs = auras.numBuffs or 32
 		local debuffs = auras.numDebuffs or 40
 		local max = debuffs + buffs
@@ -281,18 +283,24 @@ local Update = function(self, event, unit)
 		local visibleBuffs, visibleDebuffs = 0, 0
 		for index = 1, max do
 			if(index > buffs) then
-				if(updateIcon(self, unit, auras, index % debuffs, visibleBuffs, auras.debuffFilter or auras.filter or 'HARMFUL', true, debuffs)) then
+				if updateAura(self, unit, auras,
+							  index % debuffs, visibleBuffs,
+							  auras.debuffFilter or auras.filter or 'HARMFUL',
+							  true, debuffs)
+				then
 					visibleDebuffs = visibleDebuffs + 1
 				end
 			else
-				if(updateIcon(self, unit, auras, index, 0, auras.buffFilter or  auras.filter or 'HELPFUL')) then
+				if updateAura(self, unit, auras, index, 0,
+							  auras.buffFilter or  auras.filter or 'HELPFUL')
+				then
 					visibleBuffs = visibleBuffs + 1
 				end
 			end
 		end
 
 		local index = visibleBuffs + visibleDebuffs + 1
-		while(auras[index]) do
+		while auras[index] do
 			auras[index]:Hide()
 			index = index + 1
 		end
@@ -301,19 +309,21 @@ local Update = function(self, event, unit)
 		auras.visibleDebuffs = visibleDebuffs
 		auras.visibleAuras = visibleBuffs + visibleDebuffs
 
-		if(self.PreTxtAuraSetPosition) then self:PreTxtAuraSetPosition(auras, max) end
+		if self.PreTxtAuraSetPosition then
+			self:PreTxtAuraSetPosition(auras, max)
+		end
 		self:SetTxtAuraPosition(auras, max)
 	end
 
-	if(buffs) then
+	if buffs then
 		local filter = buffs.filter or 'HELPFUL'
 		local max = buffs.num or 32
 		local visibleBuffs = 0
 		for index = 1, max do
-			if(not updateIcon(self, unit, buffs, index, 0, filter)) then
+			if not updateAura(self, unit, buffs, index, 0, filter) then
 				max = index - 1
 
-				while(buffs[index]) do
+				while buffs[index] do
 					buffs[index]:Hide()
 					index = index + 1
 				end
@@ -325,19 +335,21 @@ local Update = function(self, event, unit)
 
 		buffs.visibleBuffs = visibleBuffs
 
-		if(self.PreTxtAuraSetPosition) then self:PreTxtAuraSetPosition(buffs, max) end
+		if self.PreTxtAuraSetPosition then
+			self:PreTxtAuraSetPosition(buffs, max)
+		end
 		self:SetTxtAuraPosition(buffs, max)
 	end
-]]--
-	if(debuffs) then
+
+	if debuffs then
 		local filter = debuffs.filter or 'HARMFUL'
 		local max = debuffs.num or 40
 		local visibleDebuffs = 0
 		for index = 1, max do
-			if(not updateAura(self, unit, debuffs, index, 0, filter, true)) then
+			if not updateAura(self, unit, debuffs, index, 0, filter, true) then
 				max = index - 1
 
-				while(debuffs[index]) do
+				while debuffs[index] do
 					debuffs[index]:Hide()
 					index = index + 1
 				end
@@ -348,7 +360,9 @@ local Update = function(self, event, unit)
 		end
 		debuffs.visibleDebuffs = visibleDebuffs
 
-		if(self.PreTxtAuraSetPosition) then self:PreTxtAuraSetPosition(debuffs, max) end
+		if self.PreTxtAuraSetPosition then
+			self:PreTxtAuraSetPosition(debuffs, max)
+		end
 		self:SetTxtAuraPosition(debuffs, max)
 	end
 
