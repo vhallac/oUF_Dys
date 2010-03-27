@@ -96,7 +96,7 @@ local UpdateCd = function(cd, timeLeft)
 		nextUpdate = nextsec -- Update every second
 	end
 	cd:SetText(timestr)
-	return nextUpdate + 0.2 -- Check at least 50ms later than turn-over time
+	return nextUpdate + 0.2 -- Check at least 200ms later than turn-over time
 end
 
 local AuraOnUpdate = function(self, elapsed)
