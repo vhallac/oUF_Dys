@@ -1,0 +1,10 @@
+A customized and extended version of oUF_Lyn.
+
+The following additional features are available:
+* A decursive-like raid frame for easy cleansing
+* A bar-like player debuff display for low CPU usage
+* Boss Frames (not tested yet)
+
+Party and raid frames were removed from the original layout. I use oUF_Grid instead (see "vhallac/ouf_grid":http://github.com/vhallac/ouf_grid).
+
+There were many changes to the way things are handled, and the source code has diverged a lot from oUF_Lyn since I started.
