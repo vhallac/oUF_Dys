@@ -203,11 +203,7 @@ end
 -- ------------------------------------------------------------------------
 -- the layout starts here
 -- ------------------------------------------------------------------------
-local StyleSettings
-
 local func = function(settings, self, unit, isSingle)
-	local settings = StyleSettings[self.style] or {}
-
 	self:SetSize(settings.width, settings.height)
 
 	self.menu = menu -- Enable the menus
@@ -215,7 +211,7 @@ local func = function(settings, self, unit, isSingle)
 	self:SetScript("OnEnter", UnitFrame_OnEnter)
 	self:SetScript("OnLeave", UnitFrame_OnLeave)
 
-	-- XXX: Change to AnyUp when RegisterAttributeDriver doesn't cause clicks
+	-- TODO: Change to AnyUp when RegisterAttributeDriver doesn't cause clicks
 	-- to get incorrectly eaten.
 	self:RegisterForClicks("AnyDown")
 
@@ -463,12 +459,14 @@ local func = function(settings, self, unit, isSingle)
 		-- combo points
 		--
 		if(playerClass=="ROGUE" or playerClass=="DRUID") then
-			self.CPoints = self:CreateFontString(nil, "OVERLAY")
-			self.CPoints:SetPoint("RIGHT", self, "LEFT", -10, 0)
-			self.CPoints:SetFont(font, 38, "OUTLINE")
-			self.CPoints:SetTextColor(0, 0.81, 1)
-			self.CPoints:SetShadowOffset(1, -1)
-			self.CPoints:SetJustifyH"RIGHT"
+			local cpoints
+			cpoints = self.Health:CreateFontString(nil, "OVERLAY")
+			cpoints:SetPoint("RIGHT", self, "LEFT", -10, 0)
+			cpoints:SetFont(font, 38, "OUTLINE")
+			cpoints:SetTextColor(0, 0.81, 1)
+			cpoints:SetShadowOffset(1, -1)
+			cpoints:SetJustifyH"RIGHT"
+			self:Tag(cpoints, "[cpoints]")
 		end
 
 		--
@@ -554,7 +552,7 @@ end
 --
 -- normal frames
 --
-StyleSettings = {
+local StyleSettings = {
 	["Dys"] = {
 		["width"] = 250,
 		["height"] = 27,
