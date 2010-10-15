@@ -174,16 +174,41 @@ end
 -- ------------------------------------------------------------------------
 -- Custom filter for Auras
 -- ------------------------------------------------------------------------
-local auraFilter = function(auras, unit, aura, name, rank, texture, count, dtype, duration, timeLeft, caster)
-	if string.find(name, "Bested") then
+local auraBlackList = {
+	-- Bested <City of Choice>
+	[64805] = true,
+	[64808] = true,
+	[64809] = true,
+	[64810] = true,
+	[64811] = true,
+	[64812] = true,
+	[64813] = true,
+	[64814] = true,
+	[64815] = true,
+	[64818] = true,
+	-- Hellscream's Warsong
+	[73816] = true,
+	[73818] = true,
+	[73819] = true,
+	[73820] = true,
+	[73821] = true,
+	[73822] = true,
+	-- Tricked or Treated
+	[24755] = true,
+}
+
+local auraFilter = function(auras, unit, aura, name, rank, texture, count, dtype, duration, timeLeft, caster, isStealable, shouldConsolidate, spellId)
+	-- Leave the consolidated buffs alone
+	if shouldConsolidate then
 		return false
 	end
 
-	if name ~= "Tricked or Treated" then
-		return true
+	-- Don't allow blacklisted debuffs
+	if auraBlackList[spellId] then
+		return false
 	end
 
-	return false
+	return true
 end
 
 -- ------------------------------------------------------------------------
@@ -390,6 +415,25 @@ local func = function(settings, self, unit)
 		self.TxtDebuffs.CustomAuraFilter = auraFilter
 
 		--
+		-- Buffs
+		--
+		self.TxtBuffs = CreateFrame("Frame", nil, self)
+		self.TxtBuffs.height = 20
+		self.TxtBuffs.width = 200
+		self.TxtBuffs.spacing = 2
+		self.TxtBuffs.num = 10
+		self.TxtBuffs.fontSize = 11
+		self.TxtBuffs.labelFont = font
+		self.TxtBuffs.initialAnchor = "TOP"
+		self.TxtBuffs:SetHeight((self.TxtBuffs.height + self.TxtBuffs.spacing)* self.TxtBuffs.num - self.TxtBuffs.spacing)
+		self.TxtBuffs:SetWidth(self.TxtBuffs.width)
+		self.TxtBuffs:SetPoint("TOPRIGHT", UIParent, "BOTTOMRIGHT", -5, 850)
+		self.TxtBuffs["growth-y"] = "DOWN"
+		self.TxtBuffs.filter = false
+		self.TxtBuffs.bgTexture = bartex
+		self.TxtBuffs.CustomAuraFilter = auraFilter
+
+		--
 		-- Resting
 		--
 		self.Resting = self.Health:CreateTexture(nil, "OVERLAY")
@@ -568,12 +612,13 @@ local player = oUF:Spawn("player", "oUF_Player")
 player:SetPoint("CENTER", -300, -260)
 local target = oUF:Spawn("target", "oUF_Target")
 target:SetPoint("CENTER", 300, -260)
+local focustarget = oUF:Spawn("focustarget", "oUF_FocusTarget")
 oUF:SetActiveStyle("Dys - small")
 local pet = oUF:Spawn("pet", "oUF_Pet")
 pet:SetPoint("BOTTOMLEFT", player, 0, -30)
 local tot = oUF:Spawn("targettarget", "oUF_TargetTarget")
 tot:SetPoint("TOPRIGHT", target, 0, 35)
-local focus	= oUF:Spawn("focus", "oUF_Focus")
+local focus = oUF:Spawn("focus", "oUF_Focus")
 focus:SetPoint("BOTTOMRIGHT", player, 0, -30)
 oUF:SetActiveStyle("Dys - medium")
 local bosses = {}
@@ -585,4 +630,5 @@ for i = 1, MAX_BOSS_FRAMES do
 		bosses[i]:SetPoint("TOP", bosses[i-1], "BOTTOM", 0, -15)
 	end
 end
+focustarget:SetPoint("TOPRIGHT", focus, "BOTTOMRIGHT", 0, -60)
 
