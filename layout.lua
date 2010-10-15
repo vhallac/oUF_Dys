@@ -84,7 +84,7 @@ end
 -- ------------------------------------------------------------------------
 local PostUpdateHealth = function(self, unit, min, max)
 	if(UnitIsDead(unit) or UnitIsGhost(unit)) then
-		bar:SetValue(0)
+		self.Health:SetValue(0)
 	end
 end
 
@@ -108,7 +108,7 @@ end
 
 local PostUpdatePower = function(self, unit, min, max)
 	if UnitIsPlayer(unit) and min ~=0 and (UnitIsDead(unit) or UnitIsGhost(unit)) then
-		bar:SetValue(0)
+		self.Power:SetValue(0)
 	end
 end
 
