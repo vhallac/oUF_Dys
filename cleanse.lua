@@ -92,12 +92,14 @@ local func = function(self, unit)
 	self:SetScript("OnEnter", UnitFrame_OnEnter)
 	self:SetScript("OnLeave", UnitFrame_OnLeave)
 
-	self:RegisterForClicks"anyup"
+	-- TODO: Change to AnyUp when RegisterAttributeDriver doesn't cause clicks
+	-- to get incorrectly eaten.
+	self:RegisterForClicks("AnyDown")
+
 	self:SetBackdrop(backdrop)
 	self:SetBackdropColor(0,0,0,1)
 
-	self:SetWidth(size_x)
-	self:SetHeight(size_y)
+	self:SetSize(size_x,size_y)
 
 	self:SetAttribute('initial-height', size_x)
 	self:SetAttribute('initial-width', size_y)
@@ -109,34 +111,43 @@ local func = function(self, unit)
 end
 
 oUF:RegisterStyle("Dys - Cleanse", func)
-oUF:SetActiveStyle("Dys - Cleanse")
 
 --
 -- raid
 --
 if playerCleanseInfo then
-	oUF_Dys.Cleanse = {}
-	for i = 1, NUM_RAID_GROUPS do
-		local raidGroup = oUF:Spawn("header", "oUF_Cleanse" .. i)
-		if i == 1 then
-			raidGroup:SetManyAttributes('showParty', true,
-										'showPlayer', true,
-										'showSolo', true)
-		end
-		raidGroup:SetManyAttributes('groupFilter', tostring(i),
-									'showRaid', true,
-									'point', "LEFT",
-									'xoffset', spacing_x,
-									'yOffset', 0)
-		table.insert(oUF_Dys.Cleanse, raidGroup)
-		if i == 1 then
-			raidGroup:SetPoint("TOPRIGHT", UIParent, "CENTER", -spacing_x/2, -290)
-		elseif i%2 == 0 then
-			raidGroup:SetPoint("TOPLEFT", oUF_Dys.Cleanse[i-1], "TOPRIGHT", spacing_x, 0)
-		else
-			raidGroup:SetPoint("TOPLEFT", oUF_Dys.Cleanse[i-2], "BOTTOMLEFT", 0, spacing_y)
-		end
-		raidGroup:Show()
-	end
+	oUF:Factory(
+		function(self)
+			oUF_Dys.Cleanse = {}
+			self:SetActiveStyle("Dys - Cleanse")
+			for i = 1, NUM_RAID_GROUPS do
+				local visibility, extra_attrs
+				if i == 1 then
+					visibility = "raid,party,solo"
+					extra_attrs = { "showParty", true,
+									"showSolo", true,
+									"showPlayer", true }
+				else
+					visibility = "raid"
+					extra_attrs = {}
+				end
+				raidGroup = self:SpawnHeader("oUF_Cleanse", nil, visibility,
+											 'showRaid', true,
+											 'groupFilter', tostring(i),
+											 'point', "LEFT",
+											 'xoffset', spacing_x,
+											 'yOffset', 0,
+											 unpack(extra_attrs))
+				table.insert(oUF_Dys.Cleanse, raidGroup)
+				if i == 1 then
+					raidGroup:SetPoint("TOPRIGHT", UIParent, "CENTER", -spacing_x/2, -290)
+				elseif i%2 == 0 then
+					raidGroup:SetPoint("TOPLEFT", oUF_Dys.Cleanse[i-1], "TOPRIGHT", spacing_x, 0)
+				else
+					raidGroup:SetPoint("TOPLEFT", oUF_Dys.Cleanse[i-2], "BOTTOMLEFT", 0, spacing_y)
+				end
+				raidGroup:Show()
+			end
+		end)
 end
 
