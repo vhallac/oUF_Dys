@@ -1,64 +1,20 @@
---[[
-	Elements handled: .Auras, .Buffs, .Debuffs
-
-	Shared:
-	 - spacing: Padding between aura icons. (Default: 0)
-	 - width: Width of the bar (default: 100)
-	 - height: Height of the bar (and size of the aura icons). (Default: 16)
-	 - initialAnchor: Initial anchor in the aura frame. (Default: "BOTTOMLEFT")
-	 - onlyShowPlayer: Only display icons casted by the player. (Default: nil)
-	 - growth-y: Growth direction, affected by initialAnchor. (Default: "RIGHT")
-	 - disableCooldown: Disable the Cooldown Spiral on the Aura Icons. (Default: nil)
-	 - filter: Expects a string with filter. See the UnitAura[1] documentation for
-		more information.
-	 - bgTexture: Background texture name
-	 - fontSize : Font size, in points (default: height - 2)
-	 - labelFont : Font used for the label (default: "Fonts\\ARIALN.TTF")
-	 - cdFond: Font used for duration countdown (default: "Fonts\\ARIALN.TTF")
-
-	.Auras only:
-	 - gap: Adds a empty icon to separate buffs and debuffs. (Default: nil)
-	 - numBuffs: The maximum number of buffs that should be shown. (Default: 32)
-	 - numDebuffs: The maximum number of debuffs that should be shown. (Default: 40)
-	 - buffFilter: See filter on Shared. (Default: "HELPFUL")
-	 - debuffFilter: See filter on Shared. (Default: "HARMFUL")
-	 - Variables set by .Auras:
-		 - visibleBuffs: Number of currently visible buff icons.
-		 - visibleDebuffs: Number of currently visible debuff icons.
-		 - visibleAuras: Total number of currently visible buffs + debuffs.
-
-	.Buffs only:
-	 - num: The maximum number of buffs that should be shown. (Default: 32)
-	 - Variables set by .Buffs:
-		 - visibleBuffs: Number of currently visible buff icons.
-
-	.Debuffs only:
-	 - num: The maximum number of debuffs that should be shown. (Default: 40)
-	 - Variables set by .Debuffs:
-		 - visibleDebuffs: Number of currently visible debuff icons.
-
-	Functions that can be overridden from within a layout:
-	 - :PostCreateTxtAuraIcon(icon, icons, index, isDebuff)
-	 - :CreateTxtAuraIcon(icons, index, isDebuff)
-	 - :PostUpdateTxtAuraIcon(icons, unit, icon, index, offset, filter, isDebuff)
-	 - :PreUpdateTxtAura(event, unit)
-	 - :PreTxtAuraSetPosition(auras, max)
-	 - :PreTxtAuraSetPosition(auras, max)
-	 - :PostUpdateTxtAura(event, unit)
-
-	[1] http://www.wowwiki.com/API_UnitAura
---]]
-
 -- Pick up the global oUF
 local parent, ns = ...
 local oUF = ns.oUF
 if not oUF then return end
 
+local VISIBLE = 1
+local HIDDEN = 0
+
+local UpdateTooltip = function(self)
+	GameTooltip:SetUnitAura(self.parent:GetParent().unit, self:GetID(), self.filter)
+end
+
 local OnEnter = function(self)
 	if(not self:IsVisible()) then return end
 
 	GameTooltip:SetOwner(self, "ANCHOR_BOTTOMRIGHT")
-	GameTooltip:SetUnitAura(self.frame.unit, self:GetID(), self.filter)
+	self:UpdateTooltip()
 end
 
 local OnLeave = function()
@@ -68,7 +24,9 @@ end
 -- We don't really need to validate much here as the filter should prevent us
 -- from doing something we shouldn't.
 local OnClick = function(self)
-	CancelUnitBuff(self.frame.unit, self:GetID(), self.filter)
+	-- TODO: This is broken. Need to use SecureAuraHeader thingie for buffs that
+	-- we can cancel.
+	-- CancelUnitBuff(self.parent:GetParent().unit, self:GetID(), self.filter)
 end
 
 local UpdateCd = function(cd, timeLeft)
@@ -105,7 +63,7 @@ local AuraOnUpdate = function(self, elapsed)
 	self.nextUpdate = UpdateCd(self.cd, self.endTime - curTime) + curTime
 end
 
-local createAuraIcon = function(self, auras, index, debuff)
+local createTxtAura = function(auras, index)
 	local button = CreateFrame("Button", nil, auras)
 	button:EnableMouse(true)
 	button:RegisterForClicks'RightButtonUp'
@@ -142,18 +100,18 @@ local createAuraIcon = function(self, auras, index, debuff)
 	overlay:SetAllPoints(button)
 --	overlay:SetTexCoord(.296875, .5703125, 0, .515625)
 
+	button.UpdateTooltip = UpdateTooltip
 	button:SetScript("OnEnter", OnEnter)
 	button:SetScript("OnLeave", OnLeave)
 
-	if(self.unit == 'player') then
+	local unit = auras.__owner.unit
+	if(unit == 'player') then
 		button:SetScript('OnClick', OnClick)
 	end
 
 	table.insert(auras, button)
 
 	button.parent = auras
-	button.frame = self
-	button.debuff = debuff
 
 	button.icon = icon
 	button.count = count
@@ -161,7 +119,7 @@ local createAuraIcon = function(self, auras, index, debuff)
 	button.cd = cd
 	button.overlay = overlay
 
-	if(self.PostCreateTxtAuraIcon) then self:PostCreateTxtAuraIcon(button, auras, index, debuff) end
+	if(auras.PostCreateTxtAura) then auras:PostCreateTxtAura(button) end
 
 	return button
 end
@@ -180,17 +138,17 @@ local customFilter = function(auras, unit, icon, name, rank, texture, count, dty
 	end
 end
 
-local updateAura = function(self, unit, auras, index, offset, filter, isDebuff, max)
-	if(index == 0) then index = max end
+local updateAura = function(unit, auras, index, offset, filter, isDebuff, max)
+--	if(index == 0) then index = max end
 
 	local name, rank, texture, count, dtype, duration, endTime, caster, isStealable, shouldConsolidate, spellId = UnitAura(unit, index, filter)
 	if(name) then
 		local aura = auras[index + offset]
 		if(not aura) then
-			aura = (self.CreateTxtAuraIcon or createAuraIcon) (self, auras, index, isDebuff)
+			aura = (auras.CreateTxtAura or createTxtAura) (auras, index)
 		end
 
-		local show = (auras.CustomAuraFilter or customFilter) (auras, unit, aura, name, rank, texture, count, dtype, duration, timeLeft, caster, isStealable, shouldConsolidate, spellId)
+		local show = (auras.CustomFilter or customFilter) (auras, unit, aura, name, rank, texture, count, dtype, duration, endTime, caster, isStealable, shouldConsolidate, spellId)
 		if(show) then
 			-- We might want to consider delaying the creation of an actual cooldown
 			-- object to this point, but I think that will just make things needlessly
@@ -229,19 +187,21 @@ local updateAura = function(self, unit, auras, index, offset, filter, isDebuff, 
 			aura:SetID(index)
 			aura:Show()
 
-			if(self.PostUpdateTxtAuraIcon) then
-				self:PostUpdateTxtAuraIcon(auras, unit, icon, index, offset, filter, isDebuff)
+			if(auras.PostUpdateTxtAura) then
+				auras:PostUpdateTxtAura(unit, icon, index, offset)
 			end
+
+			return VISIBLE
 		else
 			-- Hide the icon in-case we are in the middle of the stack.
 			aura:Hide()
-		end
 
-		return true
+			return HIDDEN
+		end
 	end
 end
 
-local SetTxtAuraPosition = function(self, auras, x)
+local SetPosition = function(auras, x)
 	if(auras and x > 0) then
 		local col = 0
 		local row = 0
@@ -266,115 +226,111 @@ local SetTxtAuraPosition = function(self, auras, x)
 	end
 end
 
+local filterAuras = function(unit, auras, filter, limit, isDebuff, offset, dontHide)
+	if (not offset) then offset = 0 end
+	local index = 1
+	local visible = 0
+	while(visible < limit) do
+		local result = updateAura(unit, auras, index, offset, filter, isDebuff)
+		if (not result) then
+			break
+		elseif (result == VISIBLE) then
+			visible = visible + 1
+		end
+		index = index + 1
+	end
+
+	if (not dontHide) then
+		for i = offset + index, #auras do
+			auras[i]:Hide()
+		end
+	end
+
+	return visible, index - 1
+end
+
 local Update = function(self, event, unit)
 	if self.unit ~= unit  then return end
-
-	if self.PreUpdateTxtAura then
-		self:PreUpdateTxtAura(event, unit)
-	end
 
 	local auras, buffs, debuffs = self.TxtAuras, self.TxtBuffs, self.TxtDebuffs
 
 	if auras then
-		local buffs = auras.numBuffs or 32
-		local debuffs = auras.numDebuffs or 40
+		if(auras.PreUpdate) then auras:PreUpdate(unit) end
+
+		local numBuffs = auras.numBuffs or 32
+		local numDebuffs = auras.numDebuffs or 40
 		local max = debuffs + buffs
 
-		local visibleBuffs, visibleDebuffs = 0, 0
-		for index = 1, max do
-			if(index > buffs) then
-				if updateAura(self, unit, auras,
-							  index % debuffs, visibleBuffs,
-							  auras.debuffFilter or auras.filter or 'HARMFUL',
-							  true, debuffs)
-				then
-					visibleDebuffs = visibleDebuffs + 1
-				end
-			else
-				if updateAura(self, unit, auras, index, 0,
-							  auras.buffFilter or  auras.filter or 'HELPFUL')
-				then
-					visibleBuffs = visibleBuffs + 1
-				end
-			end
-		end
-
-		local index = visibleBuffs + visibleDebuffs + 1
-		while auras[index] do
-			auras[index]:Hide()
-			index = index + 1
-		end
-
+		local visibleBuffs, offset = filterAuras(unit, auras,
+												 auras.buffFilter or auras.filter or 'HELPFUL',
+												 numBuffs, nil, 0, true)
 		auras.visibleBuffs = visibleBuffs
-		auras.visibleDebuffs = visibleDebuffs
-		auras.visibleAuras = visibleBuffs + visibleDebuffs
 
-		if self.PreTxtAuraSetPosition then
-			self:PreTxtAuraSetPosition(auras, max)
-		end
-		self:SetTxtAuraPosition(auras, max)
+		auras.visibleDebuffs =  filterAuras(unit, auras,
+											auras.debuffFilter or auras.filter or 'HARMFUL',
+											numDebuffs, true, offset, false)
+		auras.visibleAuras = auras.visibleBuffs + auras.visibleDebuffs
+
+		if auras.PreSetPosition then auras:PreSetPosition(max) end
+		(auras.SetPosition or SetPosition) (auras, max)
+
+		if auras.PostUpdate then auras:PostUpdate(unit) end
 	end
 
 	if buffs then
-		local filter = buffs.filter or 'HELPFUL'
-		local max = buffs.num or 32
-		local visibleBuffs = 0
-		for index = 1, max do
-			if not updateAura(self, unit, buffs, index, 0, filter) then
-				max = index - 1
+		if(buffs.PreUpdate) then buffs:PreUpdate(unit) end
 
-				while buffs[index] do
-					buffs[index]:Hide()
-					index = index + 1
-				end
-				break
-			end
+		local numBuffs = buffs.num or 32
+		buffs.visibleBuffs = filterAuras(unit, buffs,
+										 buffs.filter or "HELPFUL",
+										 numBuffs, false, 0, false)
 
-			visibleBuffs = visibleBuffs + 1
-		end
+		if buffs.PreSetPosition then buffs:PreSetPosition(max) end
+		(buffs.SetPosition or SetPosition) (buffs, numBuffs)
 
-		buffs.visibleBuffs = visibleBuffs
-
-		if self.PreTxtAuraSetPosition then
-			self:PreTxtAuraSetPosition(buffs, max)
-		end
-		self:SetTxtAuraPosition(buffs, max)
+		if buffs.PostUpdate then buffs:PostUpdate(unit) end
 	end
 
 	if debuffs then
-		local filter = debuffs.filter or 'HARMFUL'
-		local max = debuffs.num or 40
-		local visibleDebuffs = 0
-		for index = 1, max do
-			if not updateAura(self, unit, debuffs, index, 0, filter, true) then
-				max = index - 1
+		if(debuffs.PreUpdate) then debuffs:PreUpdate(unit) end
 
-				while debuffs[index] do
-					debuffs[index]:Hide()
-					index = index + 1
-				end
-				break
-			end
+		local numDebuffs = debuffs.num or 40
+		buffs.visibleDebuffs = filterAuras(unit, debuffs,
+										   debuffs.filter or "HARMFUL",
+										   numDebuffs, true, 0, false)
 
-			visibleDebuffs = visibleDebuffs + 1
-		end
-		debuffs.visibleDebuffs = visibleDebuffs
+		if debuffs.PreSetPosition then debuffs:PreSetPosition(max) end
+		(debuffs.SetPosition or SetPosition) (debuffs, numDebuffs)
 
-		if self.PreTxtAuraSetPosition then
-			self:PreTxtAuraSetPosition(debuffs, max)
-		end
-		self:SetTxtAuraPosition(debuffs, max)
+		if debuffs.PostUpdate then debuffs:PostUpdate(unit) end
 	end
+end
 
-	if(self.PostUpdateTxtAura) then self:PostUpdateTxtAura(event, unit) end
+local ForceUpdate = function(element)
+	return Update(element.__owner, 'ForceUpdate', element.__owner.unit)
 end
 
 local Enable = function(self)
 	if(self.TxtBuffs or self.TxtDebuffs or self.TxtAuras) then
-		if(not self.SetTxtAuraPosition) then
-			self.SetTxtAuraPosition = SetTxtAuraPosition
-		end
 		self:RegisterEvent("UNIT_AURA", Update)
+
+		local buffs = self.TxtBuffs
+		if(buffs) then
+			buffs.__owner = self
+			buffs.ForceUpdate = ForceUpdate
+		end
+
+		local debuffs = self.TxtDebuffs
+		if(debuffs) then
+			debuffs.__owner = self
+			debuffs.ForceUpdate = ForceUpdate
+		end
+
+		local auras = self.TxtAuras
+		if(auras) then
+			auras.__owner = self
+			auras.ForceUpdate = ForceUpdate
+		end
 
 		return true
 	end

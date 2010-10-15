@@ -16,22 +16,7 @@
 
 --]]
 
--- ------------------------------------------------------------------------
--- local horror
--- This speeds up the name lookups, but messes with function/variable patching.
--- ------------------------------------------------------------------------
-local select = select
-local UnitClass = UnitClass
-local UnitIsDead = UnitIsDead
-local UnitIsPVP = UnitIsPVP
-local UnitIsGhost = UnitIsGhost
-local UnitIsPlayer = UnitIsPlayer
-local UnitReaction = UnitReaction
-local UnitIsConnected = UnitIsConnected
-local UnitCreatureType = UnitCreatureType
-local UnitClassification = UnitClassification
-local UnitReactionColor = UnitReactionColor
-local RAID_CLASS_COLORS = RAID_CLASS_COLORS
+
 -- Pick up the global oUF
 local parent, ns = ...
 local oUF = ns.oUF
@@ -67,7 +52,11 @@ oUF.colors.happiness = {
 -- ------------------------------------------------------------------------
 local menu = function(self)
 	local unit = self.unit:sub(1, -2)
-	local cunit = self.unit:gsub("(.)", string.upper, 1)
+	local cunit = self.unit:gsub("^%l", string.upper)
+
+	if(cunit == 'Vehicle') then
+		cunit = 'Pet'
+	end
 
 	if(unit == "party" or unit == "partypet") then
 		ToggleDropDownMenu(1, nil, _G["PartyMemberFrame"..self.id.."DropDown"], "cursor", 0, 0)
@@ -93,7 +82,7 @@ end
 -- ------------------------------------------------------------------------
 -- health update
 -- ------------------------------------------------------------------------
-local updateHealth = function(self, event, unit, bar, min, max)
+local PostUpdateHealth = function(self, unit, min, max)
 	if(UnitIsDead(unit) or UnitIsGhost(unit)) then
 		bar:SetValue(0)
 	end
@@ -102,7 +91,7 @@ end
 -- ------------------------------------------------------------------------
 -- power update
 -- ------------------------------------------------------------------------
-local function PreUpdatePower(self, event, unit)
+local function PreUpdatePower(self, unit)
 	if self.unit ~= 'player' then return end
 
 	local cur = UnitPower('player', SPELL_POWER_MANA)
@@ -117,7 +106,7 @@ local function PreUpdatePower(self, event, unit)
 	self.DruidMana:SetAlpha((powertype ~= 0) and 1 or 0)
 end
 
-local PostUpdatePower = function(self, event, unit, bar, min, max)
+local PostUpdatePower = function(self, unit, min, max)
 	if UnitIsPlayer(unit) and min ~=0 and (UnitIsDead(unit) or UnitIsGhost(unit)) then
 		bar:SetValue(0)
 	end
@@ -126,8 +115,8 @@ end
 -- ------------------------------------------------------------------------
 -- aura reskin
 -- ------------------------------------------------------------------------
-local auraIcon = function(self, button, icons)
-	icons.showDebuffType = true -- show debuff border type color
+local auraIcon = function(self, button)
+	self.showDebuffType = true -- show debuff border type color
 
 	button.icon:SetTexCoord(.07, .93, .07, .93)
 	button.icon:SetPoint("TOPLEFT", button, "TOPLEFT", 1, -1)
@@ -145,8 +134,8 @@ end
 -- ------------------------------------------------------------------------
 -- Some tags I want
 -- ------------------------------------------------------------------------
-oUF.TagEvents["[dyscurhp]"] = "UNIT_HEALTH"
-oUF.Tags["[dyscurhp]"] = function(u)
+oUF.TagEvents["dys:curhp"] = oUF.TagEvents.curhp
+oUF.Tags["dys:curhp"] = function(u)
 	local text=""
 	if UnitIsDead(u) or UnitIsGhost(u) then
 		text = "|cff2000dead|r"
@@ -214,14 +203,21 @@ end
 -- ------------------------------------------------------------------------
 -- the layout starts here
 -- ------------------------------------------------------------------------
-local func = function(settings, self, unit)
+local StyleSettings
+
+local func = function(settings, self, unit, isSingle)
+	local settings = StyleSettings[self.style] or {}
+
+	self:SetSize(settings.width, settings.height)
+
 	self.menu = menu -- Enable the menus
 
 	self:SetScript("OnEnter", UnitFrame_OnEnter)
 	self:SetScript("OnLeave", UnitFrame_OnLeave)
 
-	self:RegisterForClicks"anyup"
-	self:SetAttribute("*type2", "menu")
+	-- XXX: Change to AnyUp when RegisterAttributeDriver doesn't cause clicks
+	-- to get incorrectly eaten.
+	self:RegisterForClicks("AnyDown")
 
 	--
 	-- background
@@ -257,7 +253,7 @@ local func = function(settings, self, unit)
 	self.Health.colorReaction = true
 	self.Health.colorDisconnected = true
 	self.Health.colorTapping = true
-	self.PostUpdateHealth = updateHealth -- let the colors be
+	self.Health.PostUpdate = PostUpdateHealth -- let the colors be
 
 	--
 	-- powerbar
@@ -287,7 +283,7 @@ local func = function(settings, self, unit)
 		self.Power.colorClass = true
 		self.Power.colorPower = true
 		self.Power.colorHappiness = false
-		self.PostUpdatePower = PostUpdatePower
+		self.Power.PostUpdate = PostUpdatePower
 	end
 
 	--
@@ -308,16 +304,16 @@ local func = function(settings, self, unit)
 	self.InfoLeft:SetHeight(fontsize + 2)
 	if unit=="player" then
 		self:Tag(self.InfoLeft, "[curpp]")
-		self:Tag(self.InfoRight, "[dyscurhp(.)][perhp(%)]")
+		self:Tag(self.InfoRight, "[dys:curhp].[perhp]%")
 	elseif unit=="target" then
-		self:Tag(self.InfoLeft, "[difficulty][level][shortclassification][( )raidcolor][name(|r)]")
-		self:Tag(self.InfoRight, "[dyscurhp(.)][perhp(%)]")
+		self:Tag(self.InfoLeft, "[difficulty][level][shortclassification] [raidcolor][name]|r")
+		self:Tag(self.InfoRight, "[dys:curhp].[perhp]%")
 	elseif unit:match("boss") then
 		self:Tag(self.InfoLeft, "[name]")
-		self:Tag(self.InfoRight, "[dyscurhp(.)][perhp(%)]")
+		self:Tag(self.InfoRight, "[dys:curhp].[perhp]%")
 	else
 		self:Tag(self.InfoLeft, "[raidcolor][name]")
-		self:Tag(self.InfoRight, "[perhp(%)]")
+		self:Tag(self.InfoRight, "[perhp]%")
 	end
 
 	-- ------------------------------------
@@ -325,6 +321,7 @@ local func = function(settings, self, unit)
 	-- ------------------------------------
 	if unit=="player" then
 		-- Check aggro, and update health color
+		-- TODO: Won't do squat. Need to hook in deeper
 		self.OverrideUpdateThreat = checkThreatSituation
 
 		-- A texture or a frame is needed to activate threat module.
@@ -334,7 +331,7 @@ local func = function(settings, self, unit)
 		self.Threat = threat
 
 		if(playerClass=="DRUID") then
-			self.PreUpdatePower = PreUpdatePower -- For Druid mana
+			self.Power.PreUpdate = PreUpdatePower -- For Druid mana
 			-- bar
 			self.DruidMana = CreateFrame('StatusBar', nil, self)
 			self.DruidMana:SetPoint('BOTTOM', self, 'TOP', 0, 14)
@@ -390,12 +387,6 @@ local func = function(settings, self, unit)
 		self.Spark:SetWidth(self.Power:GetHeight()*2)
 
 		--
-		-- oUF_BarFader
-		--
-		self.BarFade = true
-		self.BarFadeAlpha = 0.2
-
-		--
 		-- debuffs
 		--
 		self.TxtDebuffs = CreateFrame("Frame", nil, self)
@@ -412,7 +403,7 @@ local func = function(settings, self, unit)
 		self.TxtDebuffs["growth-y"] = "DOWN"
 		self.TxtDebuffs.filter = false
 		self.TxtDebuffs.bgTexture = bartex
-		self.TxtDebuffs.CustomAuraFilter = auraFilter
+		self.TxtDebuffs.CustomFilter = auraFilter
 
 		--
 		-- Buffs
@@ -431,7 +422,7 @@ local func = function(settings, self, unit)
 		self.TxtBuffs["growth-y"] = "DOWN"
 		self.TxtBuffs.filter = false
 		self.TxtBuffs.bgTexture = bartex
-		self.TxtBuffs.CustomAuraFilter = auraFilter
+		self.TxtBuffs.CustomFilter = auraFilter
 
 		--
 		-- Resting
@@ -460,12 +451,6 @@ local func = function(settings, self, unit)
 			self.Health.colorClass = false
 			self.Health.colorHappiness = true
 		end
-
-		--
-		-- oUF_BarFader
-		--
-		self.BarFade = true
-		self.BarFadeAlpha = 0.2
 	end
 
 	-- ------------------------------------
@@ -507,6 +492,7 @@ local func = function(settings, self, unit)
 		self.Buffs["growth-y"] = "TOP"
 		self.Buffs.num = 20
 		self.Buffs.spacing = 2
+		self.Buffs.PostCreateIcon = auraIcon
 
 		--
 		-- debuffs
@@ -522,6 +508,7 @@ local func = function(settings, self, unit)
 		self.Debuffs.showDebuffType = true
 		self.Debuffs.num = 40
 		self.Debuffs.spacing = 2
+		self.Debuffs.PostCreateIcon = auraIcon
 	end
 
 	-- ------------------------------------
@@ -536,19 +523,10 @@ local func = function(settings, self, unit)
 		self.RaidIcon:SetWidth(16)
 		self.RaidIcon:SetPoint("RIGHT", self, 0, 9)
 		self.RaidIcon:SetTexture"Interface\\TargetingFrame\\UI-RaidTargetingIcons"
-
-		--
-		-- oUF_BarFader
-		--
-		if unit=="focus" then
-			self.BarFade = true
-			self.BarFadeAlpha = 0.2
-		end
 	end
 
 	-- Clip name if needed
-	self.InfoLeft:SetWidth(settings["initial-width"]*0.75)
-
+	self.InfoLeft:SetWidth(settings["width"]*0.75)
 
 	-- ------------------------------------
 	-- boss frames
@@ -566,12 +544,6 @@ local func = function(settings, self, unit)
 		self.RaidIcon:SetTexture"Interface\\TargetingFrame\\UI-RaidTargetingIcons"
 	end
 
-	--
-	-- custom aura textures
-	--
-	self.PostCreateAuraIcon = auraIcon
-	self.SetAuraPosition = auraOffset
-
 	return self
 end
 
@@ -582,53 +554,70 @@ end
 --
 -- normal frames
 --
-oUF:RegisterStyle("Dys", setmetatable({
-	["initial-width"] = 250,
-	["initial-height"] = 27,
-	["healthbar-height"] = 15.5,
-	["have-powerbar"] = true,
-	["powerbar-height"] = 10,
-	["fontsize"] = 15,
-}, {__call = func}))
+StyleSettings = {
+	["Dys"] = {
+		["width"] = 250,
+		["height"] = 27,
+		["healthbar-height"] = 15.5,
+		["have-powerbar"] = true,
+		["powerbar-height"] = 10,
+		["fontsize"] = 15,
+	},
+	["Dys - medium"] = {
+		["width"] = 180,
+		["height"] = 20,
+		["healthbar-height"] = 15,
+		["have-powerbar"] = true,
+		["powerbar-height"] = 3,
+		["fontsize"] = 13,
+	},
+	["Dys - small"] = {
+		["width"] = 120,
+		["height"] = 18,
+		["healthbar-height"] = 18,
+		["fontsize"] = 12,
+	}
+}
 
-oUF:RegisterStyle("Dys - medium", setmetatable({
-	["initial-width"] = 180,
-	["initial-height"] = 20,
-	["healthbar-height"] = 15,
-	["have-powerbar"] = true,
-	["powerbar-height"] = 3,
-	["fontsize"] = 13,
-}, {__call = func}))
-
-oUF:RegisterStyle("Dys - small", setmetatable({
-	["initial-width"] = 120,
-	["initial-height"] = 18,
-	["healthbar-height"] = 18,
-	["fontsize"] = 12,
-}, {__call = func}))
-
-oUF:SetActiveStyle("Dys")
-local player = oUF:Spawn("player", "oUF_Player")
-player:SetPoint("CENTER", -300, -260)
-local target = oUF:Spawn("target", "oUF_Target")
-target:SetPoint("CENTER", 300, -260)
-local focustarget = oUF:Spawn("focustarget", "oUF_FocusTarget")
-oUF:SetActiveStyle("Dys - small")
-local pet = oUF:Spawn("pet", "oUF_Pet")
-pet:SetPoint("BOTTOMLEFT", player, 0, -30)
-local tot = oUF:Spawn("targettarget", "oUF_TargetTarget")
-tot:SetPoint("TOPRIGHT", target, 0, 35)
-local focus = oUF:Spawn("focus", "oUF_Focus")
-focus:SetPoint("BOTTOMRIGHT", player, 0, -30)
-oUF:SetActiveStyle("Dys - medium")
-local bosses = {}
-for i = 1, MAX_BOSS_FRAMES do
-	bosses[i] = oUF:Spawn("boss"..i, "oUF_Boss" .. i)
-	if i == 1 then
-		bosses[i]:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", 5, 700)
-	else
-		bosses[i]:SetPoint("TOP", bosses[i-1], "BOTTOM", 0, -15)
-	end
+local RegisterStyle = function (name)
+	oUF:RegisterStyle(name, setmetatable(StyleSettings[name], {__call = func}))
 end
-focustarget:SetPoint("TOPRIGHT", focus, "BOTTOMRIGHT", 0, -60)
 
+RegisterStyle("Dys")
+RegisterStyle("Dys - medium")
+RegisterStyle("Dys - small")
+
+oUF:Factory(
+	function (self)
+		self:SetActiveStyle("Dys")
+
+		local player = self:Spawn("player", "oUF_Player")
+		player:SetPoint("CENTER", -300, -260)
+
+		local target = self:Spawn("target", "oUF_Target")
+		target:SetPoint("CENTER", 300, -260)
+
+		local focustarget = self:Spawn("focustarget", "oUF_FocusTarget")
+		focustarget:SetPoint("TOPRIGHT", focus, "BOTTOMRIGHT", 0, -60)
+
+		self:SetActiveStyle("Dys - small")
+
+		local pet = self:Spawn("pet", "oUF_Pet")
+		pet:SetPoint("BOTTOMLEFT", player, 0, -30)
+		local tot = self:Spawn("targettarget", "oUF_TargetTarget")
+		tot:SetPoint("TOPRIGHT", target, 0, 35)
+		local focus = self:Spawn("focus", "oUF_Focus")
+		focus:SetPoint("BOTTOMRIGHT", player, 0, -30)
+
+		self:SetActiveStyle("Dys - medium")
+
+		local bosses = {}
+		for i = 1, MAX_BOSS_FRAMES do
+			bosses[i] = self:Spawn("boss"..i, "oUF_Boss" .. i)
+			if i == 1 then
+				bosses[i]:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", 5, 700)
+			else
+				bosses[i]:SetPoint("TOP", bosses[i-1], "BOTTOM", 0, -15)
+			end
+		end
+	end )
