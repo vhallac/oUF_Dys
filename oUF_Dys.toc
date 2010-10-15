@@ -10,7 +10,7 @@ embeds.xml
 
 oUF\ouf.xml
 
-oUF_PowerSpark\oUF_PowerSpark.lua
+#oUF_PowerSpark\oUF_PowerSpark.lua
 
 textaura.lua
 layout.lua
