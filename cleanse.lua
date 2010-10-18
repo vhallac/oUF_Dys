@@ -12,15 +12,15 @@ local size_y = 27
 local playerClass = select(2, UnitClass("player"))
 local cleanseInfo = {
 	MAGE = {
-		["Curse"] = 475 -- Remove Curse (Mage)
+		["Curse"] = "Remove Curse",
 	},
 	DRUID = {
-		["Curse"] = 2782, -- Remove Curse (Druid),
-		["Poison"] = 2893, -- Abolish Poison
+		["Curse"] = "Remove Corruption",
+		["Poison"] = "Remove Corruption",
 	},
 	PRIEST = {
-		["Disease"] = 552, -- Abolish Disease,
-		["Magic"] = 988, -- Dispel Magic
+		["Disease"] = "Cure Disease",
+		["Magic"] = "Dispel Magic",
 	},
 	-- TODO: Add other classes. Paladins, shamans...
 }
@@ -33,7 +33,7 @@ local function HasDebuffType(unit, debuffSpells)
 		local name, _, _, _, debuffType = UnitDebuff(unit, i, "RAID")
 		if not name then return end
 		if debuffType and debuffSpells[debuffType] then
-			local inRange = IsSpellInRange(debuffSpells[debuffType], "spell", unit)
+			local inRange = IsSpellInRange(debuffSpells[debuffType], unit)
 			return true, inRange
 		end
 	end
