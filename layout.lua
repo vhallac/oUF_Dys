@@ -84,7 +84,12 @@ end
 -- ------------------------------------------------------------------------
 local PostUpdateHealth = function(self, unit, min, max)
 	if(UnitIsDead(unit) or UnitIsGhost(unit)) then
-		self.Health:SetValue(0)
+		self:SetValue(0)
+	end
+
+	-- Allow status bar color overrides (for aggro detection)
+	if self.colorOverride then
+		self:SetStatusBarColor(unpack(self.colorOverride))
 	end
 end
 
@@ -97,18 +102,20 @@ local function PreUpdatePower(self, unit)
 	local cur = UnitPower('player', SPELL_POWER_MANA)
 	local max = UnitPowerMax('player', SPELL_POWER_MANA)
 
-	self.DruidMana:SetMinMaxValues(0, max)
-	self.DruidMana:SetValue(cur)
+	local druidMana = self.__owner.DruidMana
 
-	self.DruidMana.Text:SetFormattedText('%d%%', math.floor(cur / max * 100))
+	druidMana:SetMinMaxValues(0, max)
+	druidMana:SetValue(cur)
+
+	druidMana.Text:SetFormattedText('%d%%', math.floor(cur / max * 100))
 
 	local powertype = UnitPowerType('player')
-	self.DruidMana:SetAlpha((powertype ~= 0) and 1 or 0)
+	druidMana:SetAlpha((powertype ~= 0) and 1 or 0)
 end
 
 local PostUpdatePower = function(self, unit, min, max)
 	if UnitIsPlayer(unit) and min ~=0 and (UnitIsDead(unit) or UnitIsGhost(unit)) then
-		self.Power:SetValue(0)
+		self:SetValue(0)
 	end
 end
 
@@ -147,19 +154,15 @@ oUF.Tags["dys:curhp"] = function(u)
 	return text
 end
 
-local colorHealthRed = function(self, event, unit)
-	self.Health:SetStatusBarColor(1, 0, 0)
-end
-
 local detectAggro = function(self, event, unit)
 	if(unit ~= self.unit) then return end
 
 	local status = UnitThreatSituation(unit)
 
 	if status == 3 then
-		self.Health.Override = colorHealthRed
+		self.Health.colorOverride = {1,0,0}
 	else
-		self.Health.Override = nil
+		self.Health.colorOverride = nil
 	end
 	self.Health:ForceUpdate()
 end
