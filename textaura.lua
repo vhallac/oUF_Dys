@@ -21,14 +21,6 @@ local OnLeave = function()
 	GameTooltip:Hide()
 end
 
--- We don't really need to validate much here as the filter should prevent us
--- from doing something we shouldn't.
-local OnClick = function(self)
-	-- TODO: This is broken. Need to use SecureAuraHeader thingie for buffs that
-	-- we can cancel.
-	-- CancelUnitBuff(self.parent:GetParent().unit, self:GetID(), self.filter)
-end
-
 local UpdateCd = function(cd, timeLeft)
 	local timehr = floor(timeLeft/3600)
 	timeLeft = timeLeft - timehr * 3600
@@ -63,8 +55,8 @@ local AuraOnUpdate = function(self, elapsed)
 	self.nextUpdate = UpdateCd(self.cd, self.endTime - curTime) + curTime
 end
 
-local createTxtAura = function(auras, index)
-	local button = CreateFrame("Button", nil, auras)
+local createTxtAura = function(auras, index, filter)
+	local button = CreateFrame("Button", nil, auras, "SecureActionButtonTemplate")
 	button:EnableMouse(true)
 	button:RegisterForClicks'RightButtonUp'
 
@@ -106,7 +98,10 @@ local createTxtAura = function(auras, index)
 
 	local unit = auras.__owner.unit
 	if(unit == 'player') then
-		button:SetScript('OnClick', OnClick)
+		button:SetAttribute("unit", unit)
+		button:SetAttribute("index", index)
+		button:SetAttribute("filter", filter)
+		button:SetAttribute("type2", "cancelaura")
 	end
 
 	table.insert(auras, button)
@@ -145,7 +140,7 @@ local updateAura = function(unit, auras, index, offset, filter, isDebuff, max)
 	if(name) then
 		local aura = auras[index + offset]
 		if(not aura) then
-			aura = (auras.CreateTxtAura or createTxtAura) (auras, index)
+			aura = (auras.CreateTxtAura or createTxtAura) (auras, index, filter)
 		end
 
 		local show = (auras.CustomFilter or customFilter) (auras, unit, aura, name, rank, texture, count, dtype, duration, endTime, caster, isStealable, shouldConsolidate, spellId)
